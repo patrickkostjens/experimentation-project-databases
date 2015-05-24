@@ -7,14 +7,30 @@
 
 namespace po = boost::program_options;
 
-struct command_line_options {
-	int query;
+enum ProcessingMode {
+	CPU,
+	NUM_MODES
 };
 
-command_line_options get_command_line_options(int argc, _TCHAR* argv[]) {
+struct CommandLineOptions {
+	int query;
+	ProcessingMode processing_mode;
+};
+
+ProcessingMode CastProcessingMode(int mode) {
+	if (mode < ProcessingMode::NUM_MODES) {
+		return static_cast<ProcessingMode>(mode);
+	}
+	else {
+		throw std::exception("Invalid value for --processingMode");
+	}
+}
+
+CommandLineOptions GetCommandLineOptions(int argc, _TCHAR* argv[]) {
 	po::options_description desc("Options");
 	desc.add_options()
 		("query", po::value<int>()->required(), "[Required] Set query to run")
+		("processingMode", po::value<int>()->required(), "[Required] Mode that should be used to process the query")
 		("help", "Show this help message");
 
 	po::variables_map vm;
@@ -25,12 +41,14 @@ command_line_options get_command_line_options(int argc, _TCHAR* argv[]) {
 		exit(0);
 	}
 
-	command_line_options options;
+	CommandLineOptions options;
 
 	try {
 		po::notify(vm);
 
 		options.query = vm["query"].as<int>();
+		options.processing_mode = CastProcessingMode(vm["processingMode"].as<int>());
+		
 	}
 	catch (std::exception& e) {
 		std::cerr << "Error: " << e.what() << "\n"
@@ -46,10 +64,11 @@ command_line_options get_command_line_options(int argc, _TCHAR* argv[]) {
 }
 
 int _tmain(int argc, _TCHAR* argv[]) {
-	command_line_options options;
-	options = get_command_line_options(argc, argv);
+	CommandLineOptions options;
+	options = GetCommandLineOptions(argc, argv);
 
-	std::cout << "Query: " << options.query;
+	std::cout << "Query: " << options.query << "\n";
+	std::cout << "ProcessingMode: " << options.processing_mode << "\n";
 
 	return 0;
 }
