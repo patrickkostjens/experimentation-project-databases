@@ -3,6 +3,6 @@
 
 #include "data_reader.h"
 
-DATAREADER_API std::vector<LineItem> ReadAllLineItems(std::string file_path) {
+std::vector<LineItem> ReadAllLineItems(std::string file_path) {
 	return ReadAndParseLineItems(file_path);
 }
