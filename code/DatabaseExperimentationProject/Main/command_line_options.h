@@ -8,4 +8,4 @@ struct CommandLineOptions {
 	ProcessingMode processing_mode;
 };
 
-CommandLineOptions GetCommandLineOptions(int argc, _TCHAR* argv[]);
+CommandLineOptions GetCommandLineOptions(int argc, TCHAR* argv[]);

@@ -6,7 +6,7 @@
 #include "command_line_options.h"
 
 
-int _tmain(int argc, _TCHAR* argv[]) {
+int _tmain(int argc, TCHAR* argv[]) {
 	CommandLineOptions options = GetCommandLineOptions(argc, argv);
 
 	std::cout << "Query: " << options.query << "\n";
