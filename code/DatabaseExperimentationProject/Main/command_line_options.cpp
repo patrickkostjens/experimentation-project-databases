@@ -1,3 +1,5 @@
+// Defines and parses the command line options for the console application.
+
 #include "stdafx.h"
 #include "iostream"
 #include "command_line_options.h"
