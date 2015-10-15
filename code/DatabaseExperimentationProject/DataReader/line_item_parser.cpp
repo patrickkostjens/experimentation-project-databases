@@ -53,7 +53,7 @@ std::vector<LineItem> ReadAndParseLineItems(std::string file_path) {
 		>> current.tax >> delimiter
 		>> current.return_flag >> delimiter
 		>> current.line_status >> delimiter
-		&& counter != 10000) {
+		&& counter != 100000) {
 		current.ship_date = ReadDate(&in_file);
 		current.commit_date = ReadDate(&in_file);
 		current.receipt_date = ReadDate(&in_file);
