@@ -1,5 +1,7 @@
 enum ProcessingMode {
 	CPU,
+	GPU,
+	ALL,
 	NUM_MODES
 };
 

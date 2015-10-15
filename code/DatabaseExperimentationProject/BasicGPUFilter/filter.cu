@@ -15,7 +15,7 @@ __global__ void filterKernel(LineItem *item, bool *result)
 	result[threadIndex] = item[threadIndex].order_key == 1;
 }
 
-void filter(std::vector<LineItem> items)
+void filter(std::vector<LineItem>& items)
 {
 	std::clock_t start = std::clock();
 

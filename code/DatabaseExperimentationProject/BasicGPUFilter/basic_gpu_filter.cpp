@@ -2,9 +2,9 @@
 #include "basic_gpu_filter.h"
 #include "vector"
 
-extern void filter(std::vector<LineItem> items);
+extern void filter(std::vector<LineItem>& items);
 
-void gpu_filter(std::vector<LineItem> items)
+void gpu_filter(std::vector<LineItem>& items)
 {
 	filter(items);
 }

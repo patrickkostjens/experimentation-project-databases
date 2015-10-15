@@ -8,4 +8,4 @@
 #define BASICGPUFILTER_API __declspec(dllimport) 
 #endif
 
-BASICGPUFILTER_API void gpu_filter(std::vector<LineItem> items);
+BASICGPUFILTER_API void gpu_filter(std::vector<LineItem>& items);
