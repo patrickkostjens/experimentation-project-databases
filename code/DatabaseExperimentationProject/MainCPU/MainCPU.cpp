@@ -15,6 +15,7 @@ bool LineItemFilter(LineItem item) {
 
 
 int _tmain(int argc, TCHAR* argv[]) {
+	std::clock_t total_start = std::clock();
 	CommandLineOptions options = GetCommandLineOptions(argc, argv);
 
 	std::cout << "Query: " << options.query << "\n";
@@ -36,6 +37,9 @@ int _tmain(int argc, TCHAR* argv[]) {
 	duration = (std::clock() - start) / (double)CLOCKS_PER_SEC * 1000;
 	std::cout << "CPU result count: " << resultCount << "\n";
 	std::cout << "CPU Filtering took " << duration << "ms\n";
+
+	double total_duration = (std::clock() - total_start) / (double)CLOCKS_PER_SEC * 1000;
+	std::cout << "Total took " << total_duration << "ms\n";
 
 	std::cin.get();
 	return 0;
