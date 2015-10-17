@@ -7,8 +7,8 @@
 #include "algorithm"
 #include "reader_helpers.h"
 
-std::vector<LineItem> ReadAndParseLineItems(const std::string& file_path) {
-	std::vector<LineItem> items;
+std::vector<LineItem>& ReadAndParseLineItems(const std::string& file_path) {
+	std::vector<LineItem>& items = *new std::vector<LineItem>;
 	
 	std::ifstream in_file(file_path);
 
@@ -35,8 +35,7 @@ std::vector<LineItem> ReadAndParseLineItems(const std::string& file_path) {
 		ReadUntilSeparator(in_file, current.ship_mode, sizeof(current.ship_mode) / sizeof(current.ship_mode[0]));
 		ReadUntilSeparator(in_file, current.comment, sizeof(current.comment) / sizeof(current.comment[0]));
 
-		LineItem& to_insert = current;
-		items.push_back(to_insert);
+		items.push_back(current);
 		counter++;
 		if (counter % 1000 == 0) {
 			std::cout << counter << "\r";

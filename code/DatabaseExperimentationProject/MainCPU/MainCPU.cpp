@@ -32,7 +32,8 @@ int _tmain(const int argc, const TCHAR* argv[]) {
 
 	BasicCPUProcessor<LineItem> processor(items);
 	start = std::clock();
-	int resultCount = processor.Filter(&LineItemFilter).size();
+	std::vector<LineItem>& results = processor.Filter(&LineItemFilter);
+	int resultCount = results.size();
 
 	duration = (std::clock() - start) / (double)CLOCKS_PER_SEC * 1000;
 	std::cout << "CPU result count: " << resultCount << "\n";
@@ -40,6 +41,10 @@ int _tmain(const int argc, const TCHAR* argv[]) {
 
 	double total_duration = (std::clock() - total_start) / (double)CLOCKS_PER_SEC * 1000;
 	std::cout << "Total took " << total_duration << "ms\n";
+
+	// Cleanup
+	delete &items;
+	delete &results;
 
 	std::cin.get();
 	return 0;
