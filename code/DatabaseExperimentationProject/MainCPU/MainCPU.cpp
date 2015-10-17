@@ -13,6 +13,9 @@ bool LineItemFilter(const LineItem item) {
 	return item.order_key == 1;
 }
 
+inline double GetElapsedTime(clock_t& since) {
+	return (std::clock() - since) / (double)CLOCKS_PER_SEC * 1000;
+}
 
 int _tmain(const int argc, const TCHAR* argv[]) {
 	std::clock_t total_start = std::clock();
@@ -27,7 +30,7 @@ int _tmain(const int argc, const TCHAR* argv[]) {
 	std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
 	std::cout << "Done reading\n";
 
-	duration = (std::clock() - start) / (double)CLOCKS_PER_SEC * 1000;
+	duration = GetElapsedTime(start);
 	std::cout << "Reading took " << duration << "ms\n";
 
 	BasicCPUProcessor<LineItem> processor(items);
@@ -35,11 +38,11 @@ int _tmain(const int argc, const TCHAR* argv[]) {
 	std::vector<LineItem>& results = processor.Filter(&LineItemFilter);
 	int resultCount = results.size();
 
-	duration = (std::clock() - start) / (double)CLOCKS_PER_SEC * 1000;
+	duration = GetElapsedTime(start);
 	std::cout << "CPU result count: " << resultCount << "\n";
 	std::cout << "CPU Filtering took " << duration << "ms\n";
 
-	double total_duration = (std::clock() - total_start) / (double)CLOCKS_PER_SEC * 1000;
+	double total_duration = GetElapsedTime(total_start);
 	std::cout << "Total took " << total_duration << "ms\n";
 
 	// Cleanup
