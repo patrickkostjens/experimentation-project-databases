@@ -8,7 +8,7 @@
 #include "time.h"
 #include "string"
 
-tm ParseDate(const std::string& date_string) {
+const tm ParseDate(const std::string& date_string) {
 	time_t raw_time;
 	time(&raw_time);
 	struct tm date;
@@ -27,7 +27,7 @@ void ReadUntilSeparator(std::ifstream& in_file, char* out, const int len) {
 	strcpy_s(out, len, buf.c_str());
 }
 
-tm ReadDate(std::ifstream& in_file) {
+const tm ReadDate(std::ifstream& in_file) {
 	std::string buf;
 	std::getline(in_file, buf, '|');
 

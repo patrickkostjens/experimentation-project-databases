@@ -24,7 +24,7 @@ int _tmain(const int argc, const TCHAR* argv[]) {
 	double duration;
 	std::clock_t start = std::clock();
 
-	std::vector<LineItem> items = ReadAllLineItems("..\\..\\lineitem.tbl");
+	std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
 	std::cout << "Done reading\n";
 
 	duration = (std::clock() - start) / (double)CLOCKS_PER_SEC * 1000;
