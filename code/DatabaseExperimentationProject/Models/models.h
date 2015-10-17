@@ -2,7 +2,7 @@
 
 #ifndef LINEITEM_H
 #define LINEITEM_H
-struct LineItem{
+struct LineItem {
 	int order_key;
 	int part_key;
 	int supp_key;

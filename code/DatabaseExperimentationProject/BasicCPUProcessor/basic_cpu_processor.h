@@ -3,14 +3,14 @@
 template <class T>
 class BasicCPUProcessor {
 private:
-	std::vector<T> *data_;
+	const std::vector<T> *data_;
 public:
-	BasicCPUProcessor(std::vector<T> data){
+	BasicCPUProcessor(const std::vector<T> &data){
 		data_ = new std::vector<T>(data);
 		return;
 	};
 
-	std::vector<T> Filter(bool (*filter)(T)){
+	std::vector<T> Filter(bool (*filter)(const T)){
 		std::vector<T> *result = new std::vector<T>();
 		for (unsigned int i = 0; i < data_->size(); i++) {
 			if (filter((*data_)[i])) {

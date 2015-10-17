@@ -10,4 +10,4 @@ struct CommandLineOptions {
 	ProcessingMode processing_mode;
 };
 
-CommandLineOptions GetCommandLineOptions(int argc, TCHAR* argv[]);
+const CommandLineOptions& GetCommandLineOptions(const int& argc, const TCHAR* argv[]);

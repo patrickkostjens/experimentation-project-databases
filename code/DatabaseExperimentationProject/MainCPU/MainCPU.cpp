@@ -9,12 +9,12 @@
 #include "ctime"
 
 
-bool LineItemFilter(LineItem item) {
+bool LineItemFilter(const LineItem item) {
 	return item.order_key == 1;
 }
 
 
-int _tmain(int argc, TCHAR* argv[]) {
+int _tmain(const int argc, const TCHAR* argv[]) {
 	std::clock_t total_start = std::clock();
 	CommandLineOptions options = GetCommandLineOptions(argc, argv);
 

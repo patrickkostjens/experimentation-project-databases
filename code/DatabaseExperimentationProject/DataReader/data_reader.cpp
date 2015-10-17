@@ -4,6 +4,6 @@
 #include "data_reader.h"
 #include "line_item_parser.h"
 
-std::vector<LineItem> ReadAllLineItems(std::string file_path) {
+std::vector<LineItem> ReadAllLineItems(const std::string file_path) {
 	return ReadAndParseLineItems(file_path);
 }

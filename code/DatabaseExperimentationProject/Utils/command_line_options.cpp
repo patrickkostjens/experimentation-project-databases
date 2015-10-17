@@ -10,7 +10,7 @@ typedef std::string String;
 typedef std::wstring String;
 #endif
 
-ProcessingMode CastProcessingMode(int mode) {
+const ProcessingMode& CastProcessingMode(const int& mode) {
 	if (mode < ProcessingMode::NUM_MODES) {
 		return static_cast<ProcessingMode>(mode);
 	}
@@ -20,7 +20,7 @@ ProcessingMode CastProcessingMode(int mode) {
 	}
 }
 
-TCHAR* GetCmdOption(TCHAR* args[], int count, const std::string & option)
+const TCHAR* GetCmdOption(const TCHAR* args[], const int& count, const std::string & option)
 {
 	String woption(option.begin(), option.end());
 	for (int i = 0; i < count; i++) {
@@ -32,7 +32,7 @@ TCHAR* GetCmdOption(TCHAR* args[], int count, const std::string & option)
 	return 0;
 }
 
-bool CmdOptionExists(TCHAR* args[], int count, const std::string& option)
+const bool& CmdOptionExists(const TCHAR* args[], const int& count, const std::string& option)
 {
 	String woption(option.begin(), option.end());
 	for (int i = 0; i < count; i++) {
@@ -53,11 +53,11 @@ void PrintHelp() {
 		<< "\t--help\t\t\tShow this help message\n";
 }
 
-void ErrorMissingArgument(char* argument) {
+void ErrorMissingArgument(const char* argument) {
 	std::cerr << "Required argument \"" << argument << "\" missing. \n" << "Use \"--help\" for options.\n";
 }
 
-CommandLineOptions GetCommandLineOptions(int argc, TCHAR * argv[])
+const CommandLineOptions& GetCommandLineOptions(const int& argc, const TCHAR* argv[])
 {
 	if (CmdOptionExists(argv, argc, "--help"))
 	{
@@ -65,13 +65,13 @@ CommandLineOptions GetCommandLineOptions(int argc, TCHAR * argv[])
 		exit(0);
 	}
 
-	TCHAR* query = GetCmdOption(argv, argc, "--query");
+	const TCHAR* query = GetCmdOption(argv, argc, "--query");
 	if (!query) {
 		ErrorMissingArgument("--query");
 		exit(-1);
 	}
 
-	TCHAR* processing_mode = GetCmdOption(argv, argc, "--processingMode");
+	const TCHAR* processing_mode = GetCmdOption(argv, argc, "--processingMode");
 	if (!processing_mode) {
 		ErrorMissingArgument("--processingMode");
 		exit(-1);

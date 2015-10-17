@@ -8,7 +8,7 @@
 #include "time.h"
 #include "string"
 
-tm ParseDate(std::string date_string) {
+tm ParseDate(const std::string& date_string) {
 	time_t raw_time;
 	time(&raw_time);
 	struct tm date;
@@ -20,21 +20,21 @@ tm ParseDate(std::string date_string) {
 	return date;
 }
 
-void ReadUntilSeparator(std::ifstream* in_file, char* out, int len) {
+void ReadUntilSeparator(std::ifstream& in_file, char* out, const int len) {
 	std::string buf;
-	std::getline(*in_file, buf, '|');
+	std::getline(in_file, buf, '|');
 
 	strcpy_s(out, len, buf.c_str());
 }
 
-tm ReadDate(std::ifstream* in_file) {
+tm ReadDate(std::ifstream& in_file) {
 	std::string buf;
-	std::getline(*in_file, buf, '|');
+	std::getline(in_file, buf, '|');
 
 	return ParseDate(buf);
 }
 
-std::vector<LineItem> ReadAndParseLineItems(std::string file_path) {
+std::vector<LineItem> ReadAndParseLineItems(const std::string& file_path) {
 	std::vector<LineItem> items;
 	
 	std::ifstream in_file(file_path);
@@ -54,15 +54,15 @@ std::vector<LineItem> ReadAndParseLineItems(std::string file_path) {
 		>> current.return_flag >> delimiter
 		>> current.line_status >> delimiter
 		&& counter != 100000) {
-		current.ship_date = ReadDate(&in_file);
-		current.commit_date = ReadDate(&in_file);
-		current.receipt_date = ReadDate(&in_file);
+		current.ship_date = ReadDate(in_file);
+		current.commit_date = ReadDate(in_file);
+		current.receipt_date = ReadDate(in_file);
 
-		ReadUntilSeparator(&in_file, current.ship_instruct, sizeof(current.ship_instruct) / sizeof(current.ship_instruct[0]));
-		ReadUntilSeparator(&in_file, current.ship_mode, sizeof(current.ship_mode) / sizeof(current.ship_mode[0]));
-		ReadUntilSeparator(&in_file, current.comment, sizeof(current.comment) / sizeof(current.comment[0]));
+		ReadUntilSeparator(in_file, current.ship_instruct, sizeof(current.ship_instruct) / sizeof(current.ship_instruct[0]));
+		ReadUntilSeparator(in_file, current.ship_mode, sizeof(current.ship_mode) / sizeof(current.ship_mode[0]));
+		ReadUntilSeparator(in_file, current.comment, sizeof(current.comment) / sizeof(current.comment[0]));
 
-		LineItem to_insert = current;
+		LineItem& to_insert = current;
 		items.push_back(to_insert);
 		counter++;
 		if (counter % 1000 == 0) {
