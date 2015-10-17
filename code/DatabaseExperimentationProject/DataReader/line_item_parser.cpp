@@ -66,7 +66,7 @@ std::vector<LineItem> ReadAndParseLineItems(std::string file_path) {
 		items.push_back(to_insert);
 		counter++;
 		if (counter % 1000 == 0) {
-			std::cout << counter << "\n";
+			std::cout << counter << "\r";
 		}
 	}
 
