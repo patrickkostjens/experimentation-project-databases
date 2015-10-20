@@ -24,7 +24,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Main\command_line_options.h">
+    <ClInclude Include="command_line_options.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -32,7 +32,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Main\command_line_options.cpp">
+    <ClCompile Include="command_line_options.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
