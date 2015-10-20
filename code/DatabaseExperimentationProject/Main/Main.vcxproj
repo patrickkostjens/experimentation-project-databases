@@ -55,7 +55,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)Utils\;$(SolutionDir)BasicCPUProcessor\;$(SolutionDir)DataReader\;$(SolutionDir)Models\;$(SolutionDir)BasicGPUFilter\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Utils\;$(SolutionDir)DataReader\;$(SolutionDir)Models\;$(SolutionDir)BasicGPUFilter\;$(SolutionDir)CPUQueryHandler\;</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -94,6 +94,9 @@
   <ItemGroup>
     <ProjectReference Include="..\BasicGPUFilter\BasicGPUFilter.vcxproj">
       <Project>{76144f18-83ae-4d47-9d60-671851bc6bfc}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\CPUQueryHandler\CPUQueryHandler.vcxproj">
+      <Project>{4619491e-17f3-4b83-b67c-12a743a25552}</Project>
     </ProjectReference>
     <ProjectReference Include="..\DataReader\DataReader.vcxproj">
       <Project>{6ba43df0-6bff-4d5a-8538-15e105ad5ec4}</Project>

@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Utils", "Utils\Utils.vcxpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MainCPU", "MainCPU\MainCPU.vcxproj", "{E8DE2F73-5D75-466E-A85A-722B7D23D893}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CPUQueryHandler", "CPUQueryHandler\CPUQueryHandler.vcxproj", "{4619491E-17F3-4B83-B67C-12A743A25552}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -67,6 +69,12 @@ Global
 		{E8DE2F73-5D75-466E-A85A-722B7D23D893}.Release|Win32.ActiveCfg = Release|Win32
 		{E8DE2F73-5D75-466E-A85A-722B7D23D893}.Release|Win32.Build.0 = Release|Win32
 		{E8DE2F73-5D75-466E-A85A-722B7D23D893}.Release|x64.ActiveCfg = Release|Win32
+		{4619491E-17F3-4B83-B67C-12A743A25552}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4619491E-17F3-4B83-B67C-12A743A25552}.Debug|Win32.Build.0 = Debug|Win32
+		{4619491E-17F3-4B83-B67C-12A743A25552}.Debug|x64.ActiveCfg = Debug|Win32
+		{4619491E-17F3-4B83-B67C-12A743A25552}.Release|Win32.ActiveCfg = Release|Win32
+		{4619491E-17F3-4B83-B67C-12A743A25552}.Release|Win32.Build.0 = Release|Win32
+		{4619491E-17F3-4B83-B67C-12A743A25552}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

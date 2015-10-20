@@ -20,6 +20,16 @@ const ProcessingMode& CastProcessingMode(const int& mode) {
 	}
 }
 
+const Query& CastQuery(const int& query) {
+	if (query < Query::NUM_QUERIES) {
+		return static_cast<Query>(query);
+	}
+	else {
+		std::cerr << "Invalid value for \"--query\"\n";
+		exit(-1);
+	}
+}
+
 const TCHAR* GetCmdOption(const TCHAR* args[], const int& count, const std::string & option)
 {
 	String woption(option.begin(), option.end());
@@ -78,7 +88,7 @@ const CommandLineOptions& GetCommandLineOptions(const int& argc, const TCHAR* ar
 	}
 
 	CommandLineOptions options;
-	options.query = _ttoi(query);
+	options.query = CastQuery(_ttoi(query));
 	options.processing_mode = CastProcessingMode(_ttoi(processing_mode));
 
 	return options;
