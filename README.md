@@ -7,3 +7,4 @@ The idea is to use CUDA to process (parts of) queries using the GPU. There will 
 The Visual Studio Solution works fully with Visual Studio 2013 and CUDA installed. However, without CUDA, the CPU parts can still be executed by starting the MainCPU project.
 
 Files called 'lineitem.tbl' and 'orders.tbl' are required to be in the 'code' folder. These files can be generated using the DBGEN tool of the TPC-H benchmark.
+See: [TPC-H specification](http://www.tpc.org/tpch/spec/tpch2.7.0.pdf)
