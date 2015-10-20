@@ -33,6 +33,9 @@
     <ClInclude Include="reader_helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="order_parser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -48,6 +51,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="reader_helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="order_parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

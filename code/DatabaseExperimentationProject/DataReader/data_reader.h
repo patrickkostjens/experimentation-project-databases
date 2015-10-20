@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "vector"
 #include "models.h"
 
 #ifdef DATAREADER_EXPORTS
@@ -9,3 +8,4 @@
 #endif
 
 DATAREADER_API std::vector<LineItem>& ReadAllLineItems(const std::string file_path);
+DATAREADER_API std::vector<Order>& ReadAllOrders(const std::string file_path);

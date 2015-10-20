@@ -21,3 +21,18 @@ struct LineItem {
 	char comment[44];
 };
 #endif
+
+#ifndef ORDERS_H
+#define ORDERS_H
+struct Order {
+	int order_key;
+	int customer_key;
+	char order_status;
+	double total_price;
+	tm order_date;
+	char order_priority[16];
+	char clerk[16];
+	int ship_priority;
+	char comment[80];
+};
+#endif

@@ -55,6 +55,7 @@ int _tmain(const int argc, const TCHAR* argv[]) {
 	double duration;
 	std::clock_t start = std::clock();
 
+	std::vector<Order>& orders = ReadAllOrders("..\\..\\orders.tbl");
 	std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
 	std::cout << "Done reading\n";
 
@@ -78,6 +79,7 @@ int _tmain(const int argc, const TCHAR* argv[]) {
 
 	// Cleanup
 	delete &items;
+	delete &orders;
 
 	std::cin.get();
 	return 0;

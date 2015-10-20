@@ -4,7 +4,6 @@
 #include "line_item_parser.h"
 #include "iostream"
 #include "fstream"
-#include "algorithm"
 #include "reader_helpers.h"
 
 std::vector<LineItem>& ReadAndParseLineItems(const std::string& file_path) {
@@ -38,9 +37,10 @@ std::vector<LineItem>& ReadAndParseLineItems(const std::string& file_path) {
 		items.push_back(current);
 		counter++;
 		if (counter % 1000 == 0) {
-			std::cout << counter << "\r";
+			std::cout << "Line items read: " << counter << "\r";
 		}
 	}
+	std::cout << "Done reading line items\n";
 
 	return items;
 }

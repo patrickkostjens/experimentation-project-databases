@@ -86,6 +86,7 @@
   <ItemGroup>
     <ClInclude Include="data_reader.h" />
     <ClInclude Include="line_item_parser.h" />
+    <ClInclude Include="order_parser.h" />
     <ClInclude Include="reader_helpers.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -101,6 +102,7 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="line_item_parser.cpp" />
+    <ClCompile Include="order_parser.cpp" />
     <ClCompile Include="reader_helpers.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
