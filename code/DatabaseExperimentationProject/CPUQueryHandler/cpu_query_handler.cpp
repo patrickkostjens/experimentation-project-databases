@@ -51,25 +51,13 @@ void RunCPUOrders(std::vector<Order>& orders) {
 
 void ExecuteCPUQuery(Query query)
 {
-	double duration;
-	std::clock_t start = std::clock();
 	if (query == Query::SIMPLE_ORDERS) {
 		std::vector<Order>& orders = ReadAllOrders("..\\..\\orders.tbl");
-
-		std::cout << "Done reading\n";
-		duration = GetElapsedTime(start);
-		std::cout << "Reading took " << duration << "ms\n\n";
-
 		RunCPUOrders(orders);
 		delete &orders;
 	}
 	else if (query == Query::SIMPLE_LINE_ITEM) {
 		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
-		std::cout << "Done reading\n";
-
-		duration = GetElapsedTime(start);
-		std::cout << "Reading took " << duration << "ms\n\n";
-
 		RunCPULineItems(items);
 		delete &items;
 	}

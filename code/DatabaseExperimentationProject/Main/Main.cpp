@@ -14,7 +14,7 @@ inline double GetElapsedTime(clock_t& since) {
 }
 
 void RunGPU(std::vector<LineItem>& items) {
-	std::cout << "Running GPU processor\n";
+	std::cout << "Running line items GPU processor\n";
 	std::clock_t start = std::clock();
 	std::vector<LineItem>& results = gpu_filter(items);
 	int resultCount = results.size();
@@ -38,17 +38,8 @@ int _tmain(const int argc, const TCHAR* argv[]) {
 	}
 	
 	if (options.processing_mode == ProcessingMode::ALL || options.processing_mode == ProcessingMode::GPU) {
-		double duration;
-		std::clock_t start = std::clock();
 		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
-		std::cout << "Done reading\n";
-
-		duration = GetElapsedTime(start);
-		std::cout << "Reading took " << duration << "ms\n\n";
-
 		RunGPU(items);
-
-		// Cleanup
 		delete &items;
 	}
 	
