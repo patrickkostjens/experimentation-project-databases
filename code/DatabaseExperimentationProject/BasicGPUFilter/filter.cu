@@ -86,6 +86,10 @@ std::vector<LineItem>& filter(std::vector<LineItem>& items)
 		return returnValue;
 	}
 
+	duration = GetElapsedTime(start);
+	std::cout << "GPU filtering took " << duration << "ms\n";
+	start = std::clock();
+
 	// Copy output vector from GPU buffer to host memory.
 	cudaStatus = cudaMemcpy(host_results, results, count * sizeof(bool), cudaMemcpyDeviceToHost);
 	if (cudaStatus != cudaSuccess) {
@@ -100,7 +104,7 @@ std::vector<LineItem>& filter(std::vector<LineItem>& items)
 	}
 
 	duration = GetElapsedTime(start);
-	std::cout << "GPU filtering took " << duration << "ms\n";
+	std::cout << "GPU reconstructing results (on CPU) took " << duration << "ms\n";
 
 	// Cleanup
 	free(host_results);
