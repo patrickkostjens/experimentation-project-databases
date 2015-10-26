@@ -66,9 +66,10 @@ std::vector<LineItem>& filter(std::vector<LineItem>& items)
 
 	start = std::clock();
 
-	int blocks = (int)ceil((float)count / 1024);
+	const int threadsPerBlock = 1024;
+	int blocks = (int)ceil((float)count / threadsPerBlock);
 
-	filterKernel <<<blocks, count / 1024 >>>(deviceItems, results);	
+	filterKernel<TItem> <<<blocks, threadsPerBlock>>>(deviceItems, results);
 	
 	// Check for any errors launching the kernel
 	cudaStatus = cudaGetLastError();
