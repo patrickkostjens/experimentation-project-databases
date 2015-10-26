@@ -2,9 +2,11 @@
 #include "basic_gpu_filter.h"
 #include "vector"
 
-extern std::vector<LineItem>& filter(std::vector<LineItem>& items);
+template<typename TItem>
+extern std::vector<TItem>& filter(std::vector<TItem>& items);
 
-std::vector<LineItem>& gpu_filter(std::vector<LineItem>& items)
+template<typename TItem>
+std::vector<TItem>& gpu_filter(std::vector<TItem>& items)
 {
 	return filter(items);
 }

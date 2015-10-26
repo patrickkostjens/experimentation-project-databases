@@ -8,4 +8,8 @@
 #define BASICGPUFILTER_API __declspec(dllimport) 
 #endif
 
-BASICGPUFILTER_API std::vector<LineItem>& gpu_filter(std::vector<LineItem>& items);
+template<typename TItem> 
+BASICGPUFILTER_API std::vector<TItem>& gpu_filter(std::vector<TItem>& items);
+
+template BASICGPUFILTER_API std::vector<LineItem>& gpu_filter<LineItem>(std::vector<LineItem>& items);
+template BASICGPUFILTER_API std::vector<Order>& gpu_filter<Order>(std::vector<Order>& items);
