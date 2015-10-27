@@ -34,9 +34,7 @@ template<typename TItem>
 std::vector<TItem>& filter(std::vector<TItem>& items)
 {
 	std::clock_t start = std::clock();
-
 	std::vector<TItem>& returnValue = *new std::vector<TItem>();
-
 	int count = items.size();
 
 	TItem *deviceItems;
@@ -91,8 +89,7 @@ std::vector<TItem>& filter(std::vector<TItem>& items)
 		return returnValue;
 	}
 	
-	// cudaDeviceSynchronize waits for the kernel to finish, and returns
-	// any errors encountered during the launch.
+	// cudaDeviceSynchronize waits for the kernel to finish, and returns any errors encountered during the launch.
 	cudaStatus = cudaDeviceSynchronize();
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
@@ -121,14 +118,7 @@ std::vector<TItem>& filter(std::vector<TItem>& items)
 
 	// Cleanup
 	free(host_results);
-	cudaFree(results);
-	cudaFree(deviceItems);
-
-	cudaStatus = cudaGetLastError();
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaFree failed\n");
-		return returnValue;
-	}
+	cudaDeviceReset();
 
 	return returnValue;
 }
