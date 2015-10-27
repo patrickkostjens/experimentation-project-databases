@@ -11,6 +11,10 @@ std::vector<LineItem>& ReadAndParseLineItems(const std::string& file_path) {
 	
 	std::ifstream in_file(file_path);
 
+	if (!in_file.good()) {
+		std::cerr << "File '" << file_path << "' does not exist\n";
+	}
+
 	int counter = 0;
 
 	LineItem current;

@@ -11,6 +11,10 @@ std::vector<Order>& ReadAndParseOrders(const std::string& file_path) {
 
 	std::ifstream in_file(file_path);
 
+	if (!in_file.good()) {
+		std::cerr << "File '" << file_path << "' does not exist\n";
+	}
+
 	int counter = 0;
 
 	Order current;
