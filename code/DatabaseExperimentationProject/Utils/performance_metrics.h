@@ -1,1 +1,1 @@
-void PrintMemoryInfo();
+void PrintMemoryUsage();

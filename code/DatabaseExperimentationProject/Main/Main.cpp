@@ -7,6 +7,7 @@
 #include "cpu_query_handler.h"
 #include "gpu_query_handler.h"
 #include "helpers.h"
+#include "performance_metrics.h"
 
 
 int _tmain(const int argc, const TCHAR* argv[]) {
@@ -26,6 +27,10 @@ int _tmain(const int argc, const TCHAR* argv[]) {
 	
 	double total_duration = GetElapsedTime(total_start);
 	std::cout << "Total took " << total_duration << "ms\n";
+
+	// This should help detect memory leaks
+	std::cout << "Final memory usage: ";
+	PrintMemoryUsage();
 
 	std::cin.get();
 	return 0;
