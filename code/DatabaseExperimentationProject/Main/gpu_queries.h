@@ -1,4 +1,4 @@
 #include "models.h"
 
-void RunGPU(std::vector<LineItem>& items);
-void RunGPU(std::vector<Order>& orders);
+void RunGPUFilter(std::vector<LineItem>& items);
+void RunGPUFilter(std::vector<Order>& orders);

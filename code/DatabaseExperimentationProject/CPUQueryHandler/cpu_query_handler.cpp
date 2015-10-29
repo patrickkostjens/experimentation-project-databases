@@ -6,7 +6,7 @@
 #include "iostream"
 #include "vector"
 #include "models.h"
-#include "basic_cpu_processor.h"
+#include "basic_cpu_filter.h"
 #include "data_reader.h"
 
 bool LineItemFilter(LineItem item) {
@@ -21,9 +21,9 @@ inline double GetElapsedTime(clock_t& since) {
 	return (std::clock() - since) / (double)CLOCKS_PER_SEC * 1000;
 }
 
-void RunCPULineItems(std::vector<LineItem>& items) {
-	std::cout << "Running line items CPU processor\n";
-	BasicCPUProcessor<LineItem> processor(items);
+void RunCPUFilter(std::vector<LineItem>& items) {
+	std::cout << "Running line items CPU filter\n";
+	BasicCPUFilter<LineItem> processor(items);
 	std::clock_t start = std::clock();
 	std::vector<LineItem>& results = processor.Filter(&LineItemFilter);
 	int resultCount = results.size();
@@ -35,9 +35,9 @@ void RunCPULineItems(std::vector<LineItem>& items) {
 	delete &results;
 }
 
-void RunCPUOrders(std::vector<Order>& orders) {
-	std::cout << "Running orders CPU processor\n";
-	BasicCPUProcessor<Order> processor(orders);
+void RunCPUFilter(std::vector<Order>& orders) {
+	std::cout << "Running orders CPU filter\n";
+	BasicCPUFilter<Order> processor(orders);
 	std::clock_t start = std::clock();
 	std::vector<Order>& results = processor.Filter(&OrderFilter);
 	int resultCount = results.size();
@@ -53,12 +53,12 @@ void ExecuteCPUQuery(Query query)
 {
 	if (query == Query::SIMPLE_ORDERS) {
 		std::vector<Order>& orders = ReadAllOrders("..\\..\\orders.tbl");
-		RunCPUOrders(orders);
+		RunCPUFilter(orders);
 		delete &orders;
 	}
 	else if (query == Query::SIMPLE_LINE_ITEM) {
 		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
-		RunCPULineItems(items);
+		RunCPUFilter(items);
 		delete &items;
 	}
 }

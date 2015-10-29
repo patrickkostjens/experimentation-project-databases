@@ -1,11 +1,11 @@
 #include "vector"
 
 template <class T>
-class BasicCPUProcessor {
+class BasicCPUFilter {
 private:
 	const std::vector<T> *data_;
 public:
-	BasicCPUProcessor(const std::vector<T>& data){
+	BasicCPUFilter(const std::vector<T>& data){
 		data_ = &data;
 		return;
 	};

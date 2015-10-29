@@ -6,12 +6,12 @@
 void ExecuteGPUQuery(const Query& query) {
 	if (query == Query::SIMPLE_LINE_ITEM) {
 		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
-		RunGPU(items);
+		RunGPUFilter(items);
 		delete &items;
 	}
 	else if (query == Query::SIMPLE_ORDERS) {
 		std::vector<Order>& orders = ReadAllOrders("..\\..\\orders.tbl");
-		RunGPU(orders);
+		RunGPUFilter(orders);
 		delete &orders;
 	}
 	else {
