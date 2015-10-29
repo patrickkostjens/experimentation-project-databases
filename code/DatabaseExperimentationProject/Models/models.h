@@ -1,4 +1,5 @@
-#include "ctime"
+#include <ctime>
+#include <iostream>
 
 #ifndef LINEITEM_H
 #define LINEITEM_H
@@ -19,6 +20,11 @@ struct LineItem {
 	char ship_instruct[25];
 	char ship_mode[10];
 	char comment[44];
+
+	friend std::ostream &operator<<(std::ostream &output, const LineItem &item) {
+		output << "LineItem: {Order key: " << item.order_key << "; Part key: " << item.part_key << "; Supp key: " << item.supp_key << "}";
+		return output;
+	}
 };
 #endif
 
@@ -34,5 +40,10 @@ struct Order {
 	char clerk[16];
 	int ship_priority;
 	char comment[80];
+
+	friend std::ostream &operator<<(std::ostream &output, const Order &order) {
+		output << "Order: {Order key: " << order.order_key << "; Customer key: " << order.customer_key << "}";
+		return output;
+	}
 };
 #endif
