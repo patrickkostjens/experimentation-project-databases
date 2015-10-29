@@ -10,6 +10,7 @@ enum ProcessingMode {
 enum Query {
 	SIMPLE_LINE_ITEM,
 	SIMPLE_ORDERS,
+	SORT_MERGE_JOIN_LINE_ITEM_ORDERS,
 	NUM_QUERIES
 };
 
