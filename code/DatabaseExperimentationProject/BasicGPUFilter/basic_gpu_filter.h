@@ -1,6 +1,5 @@
 #include "stdafx.h"
-#include<models.h>
-#include "vector"
+#include "models.h"
 
 #ifdef BASICGPUFILTER_EXPORTS
 #define BASICGPUFILTER_API __declspec(dllexport) 

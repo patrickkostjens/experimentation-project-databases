@@ -1,6 +1,7 @@
 // DataReader.cpp : Defines the exported functions for the DLL application.
 //
 
+#include "stdafx.h"
 #include "data_reader.h"
 #include "line_item_parser.h"
 #include "order_parser.h"

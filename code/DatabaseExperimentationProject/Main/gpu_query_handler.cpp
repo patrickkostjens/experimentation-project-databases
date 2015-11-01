@@ -1,6 +1,7 @@
+#include "stdafx.h"
 #include "data_reader.h"
 #include "command_line_options.h"
-#include "iostream"
+#include <iostream>
 #include "gpu_queries.h"
 
 void ExecuteGPUQuery(const Query& query) {

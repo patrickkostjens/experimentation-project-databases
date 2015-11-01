@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "iostream"
+#include <iostream>
 #include "command_line_options.h"
 #include "cpu_query_handler.h"
 #include "gpu_query_handler.h"

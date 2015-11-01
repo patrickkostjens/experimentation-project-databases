@@ -2,8 +2,8 @@
 
 #include "stdafx.h"
 #include "line_item_parser.h"
-#include "iostream"
-#include "fstream"
+#include <iostream>
+#include <fstream>
 #include "reader_helpers.h"
 
 std::vector<LineItem>& ReadAndParseLineItems(const std::string& file_path) {

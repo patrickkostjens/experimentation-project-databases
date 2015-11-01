@@ -1,10 +1,10 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
+#include "stdafx.h"
 #include "models.h"
 #include <stdio.h>
-#include "iostream"
-#include "vector"
-#include "ctime"
+#include <iostream>
+#include <ctime>
 
 template<typename TItem>
 __global__ void filterKernel(TItem *item, bool *result) {

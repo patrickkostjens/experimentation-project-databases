@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "command_line_options.h"
 
 #ifdef CPUQUERYHANDLER_EXPORTS

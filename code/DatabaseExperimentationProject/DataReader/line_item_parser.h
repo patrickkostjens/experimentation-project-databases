@@ -1,3 +1,3 @@
-#include "data_reader.h"
+#include "stdafx.h"
 
 std::vector<LineItem>& ReadAndParseLineItems(const std::string& file_path);

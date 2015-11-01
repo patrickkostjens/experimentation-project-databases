@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "models.h"
 
 #ifdef DATAREADER_EXPORTS
 #define DATAREADER_API __declspec(dllexport) 

@@ -2,10 +2,10 @@
 //
 
 #include "stdafx.h"
-#include "iostream"
+#include <iostream>
+#include <ctime>
 #include "command_line_options.h"
 #include "cpu_query_handler.h"
-#include "ctime"
 
 inline double GetElapsedTime(clock_t& since) {
 	return (std::clock() - since) / (double)CLOCKS_PER_SEC * 1000;

@@ -1,5 +1,6 @@
+#include "stdafx.h"
 #include "reader_helpers.h"
-#include "fstream"
+#include <fstream>
 
 const tm ParseDate(const std::string& date_string) {
 	time_t raw_time;
