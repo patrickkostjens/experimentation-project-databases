@@ -10,7 +10,7 @@ typedef std::string String;
 typedef std::wstring String;
 #endif
 
-const ProcessingMode& CastProcessingMode(const int& mode) {
+const ProcessingMode CastProcessingMode(const int& mode) {
 	if (mode < ProcessingMode::NUM_MODES) {
 		return static_cast<ProcessingMode>(mode);
 	}
@@ -20,7 +20,7 @@ const ProcessingMode& CastProcessingMode(const int& mode) {
 	}
 }
 
-const Query& CastQuery(const int& query) {
+const Query CastQuery(const int& query) {
 	if (query < Query::NUM_QUERIES) {
 		return static_cast<Query>(query);
 	}
@@ -42,7 +42,7 @@ const TCHAR* GetCmdOption(const TCHAR* args[], const int& count, const std::stri
 	return 0;
 }
 
-const bool& CmdOptionExists(const TCHAR* args[], const int& count, const std::string& option)
+const bool CmdOptionExists(const TCHAR* args[], const int& count, const std::string& option)
 {
 	String woption(option.begin(), option.end());
 	for (int i = 0; i < count; i++) {
@@ -67,7 +67,7 @@ void ErrorMissingArgument(const char* argument) {
 	std::cerr << "Required argument \"" << argument << "\" missing. \n" << "Use \"--help\" for options.\n";
 }
 
-const CommandLineOptions& GetCommandLineOptions(const int& argc, const TCHAR* argv[])
+const CommandLineOptions GetCommandLineOptions(const int& argc, const TCHAR* argv[])
 {
 	if (CmdOptionExists(argv, argc, "--help"))
 	{

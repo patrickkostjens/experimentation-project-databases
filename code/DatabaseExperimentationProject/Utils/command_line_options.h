@@ -20,4 +20,4 @@ struct CommandLineOptions {
 };
 #endif
 
-const CommandLineOptions& GetCommandLineOptions(const int& argc, const TCHAR* argv[]);
+const CommandLineOptions GetCommandLineOptions(const int& argc, const TCHAR* argv[]);
