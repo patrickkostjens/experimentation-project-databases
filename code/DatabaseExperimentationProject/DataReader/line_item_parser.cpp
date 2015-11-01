@@ -44,7 +44,8 @@ std::vector<LineItem>& ReadAndParseLineItems(const std::string& file_path) {
 			std::cout << "Line items read: " << counter << "\r";
 		}
 	}
-	std::cout << "Done reading line items\n";
+	// Include some spaces to overwrite big numbers that might be printed above
+	std::cout << "Done reading line items     \n";
 
 	return items;
 }

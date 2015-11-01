@@ -37,7 +37,8 @@ std::vector<Order>& ReadAndParseOrders(const std::string& file_path) {
 			std::cout << "Orders read: " << counter << "\r";
 		}
 	}
-	std::cout << "Done reading orders\n";
+	// Include some spaces to overwrite big numbers that might be printed above
+	std::cout << "Done reading orders     \n";
 
 	return orders;
 }
