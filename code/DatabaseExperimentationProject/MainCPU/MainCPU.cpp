@@ -17,7 +17,6 @@ int _tmain(const int argc, const TCHAR* argv[]) {
 
 	std::cout << "Query: " << options.query << "\n";
 
-	double duration;
 	std::clock_t start = std::clock();
 
 	ExecuteCPUQuery(options.query);
