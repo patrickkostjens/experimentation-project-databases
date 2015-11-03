@@ -36,7 +36,7 @@ void RunCPUFilter(std::vector<LineItem>& items) {
 	BasicCPUFilter<LineItem> processor(items);
 	std::clock_t start = std::clock();
 	std::vector<LineItem>& results = processor.Filter(&LineItemFilter);
-	int resultCount = results.size();
+	size_t resultCount = results.size();
 
 	double duration = GetElapsedTime(start);
 	std::cout << "CPU result count: " << resultCount << "\n";
@@ -50,7 +50,7 @@ void RunCPUFilter(std::vector<Order>& orders) {
 	BasicCPUFilter<Order> processor(orders);
 	std::clock_t start = std::clock();
 	std::vector<Order>& results = processor.Filter(&OrderFilter);
-	int resultCount = results.size();
+	size_t resultCount = results.size();
 
 	double duration = GetElapsedTime(start);
 	std::cout << "CPU result count: " << resultCount << "\n";
@@ -64,7 +64,7 @@ void RunCPUSortMergeJoin(std::vector<LineItem>& items, std::vector<Order>& order
 	CPUSortMergeJoin<Order, LineItem> processor(orders, items);
 	std::clock_t start = std::clock();
 	std::vector<std::tuple<Order, LineItem>>& results = processor.Join(&OrderJoinPropertySelector, &LineItemJoinPropertySelector);
-	int resultCount = results.size();
+	size_t resultCount = results.size();
 
 	double duration = GetElapsedTime(start);
 	std::cout << "CPU result count: " << resultCount << "\n";

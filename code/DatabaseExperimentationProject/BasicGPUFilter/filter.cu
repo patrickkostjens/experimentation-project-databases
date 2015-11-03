@@ -7,20 +7,24 @@
 #include <ctime>
 
 template<typename TItem>
-__global__ void filterKernel(TItem *item, bool *result) {
+__global__ void filterKernel(TItem *item, bool *result, int maximum) {
 	//This should never be called, but exceptions are not supported; only specialized implementations allowed
 }
 
-template<> __global__ void filterKernel<LineItem>(LineItem *item, bool *result) {
-	int threadIndex = threadIdx.x + blockDim.x * blockIdx.x;
+template<> __global__ void filterKernel<LineItem>(LineItem *item, bool *result, int maximum) {
+	size_t threadIndex = threadIdx.x + blockDim.x * blockIdx.x;
 	
-	result[threadIndex] = item[threadIndex].order_key == 1;
+	if (threadIndex < maximum) {
+		result[threadIndex] = item[threadIndex].order_key == 1;
+	}
 }
 
-template<> __global__ void filterKernel<Order>(Order *item, bool *result) {
-	int threadIndex = threadIdx.x + blockDim.x * blockIdx.x;
+template<> __global__ void filterKernel<Order>(Order *item, bool *result, int maximum) {
+	size_t threadIndex = threadIdx.x + blockDim.x * blockIdx.x;
 
-	result[threadIndex] = item[threadIndex].order_status == 'O';
+	if (threadIndex < maximum) {
+		result[threadIndex] = item[threadIndex].order_status == 'O';
+	}
 }
 
 inline double GetElapsedTime(clock_t& since) {
@@ -30,15 +34,16 @@ inline double GetElapsedTime(clock_t& since) {
 void handleCudaError(cudaError_t status) {
 	if (status != cudaSuccess) {
 		fprintf(stderr, "CUDA error: %s", cudaGetErrorString(status));
+		cudaDeviceReset();
 		throw cudaGetErrorString(status);
 	}
 }
 
 template<typename TItem>
-std::vector<TItem>& filter(std::vector<TItem>& items) {
+std::vector<TItem>& filter_standard(std::vector<TItem>& items) {
 	std::clock_t start = std::clock();
 	std::vector<TItem>& returnValue = *new std::vector<TItem>();
-	int count = items.size();
+	size_t count = items.size();
 
 	TItem *deviceItems;
 	bool *deviceResults = false;
@@ -59,7 +64,7 @@ std::vector<TItem>& filter(std::vector<TItem>& items) {
 
 	const int threadsPerBlock = 1024;
 	int blocks = (int)ceil((float)count / threadsPerBlock);
-	filterKernel<TItem> <<<blocks, threadsPerBlock>>>(deviceItems, deviceResults);
+	filterKernel<TItem> <<<blocks, threadsPerBlock>>>(deviceItems, deviceResults, count);
 	
 	// cudaDeviceSynchronize waits for the kernel to finish, and returns any errors encountered during the launch.
 	handleCudaError(cudaDeviceSynchronize());
@@ -85,5 +90,57 @@ std::vector<TItem>& filter(std::vector<TItem>& items) {
 	return returnValue;
 }
 
-template std::vector<LineItem>& filter<LineItem>(std::vector<LineItem>& items);
-template std::vector<Order>& filter<Order>(std::vector<Order>& items);
+template std::vector<LineItem>& filter_standard<LineItem>(std::vector<LineItem>& items);
+template std::vector<Order>& filter_standard<Order>(std::vector<Order>& items);
+
+template<typename TItem>
+std::vector<TItem>& filter_um(std::vector<TItem>& items) {
+	std::clock_t start = std::clock();
+	std::vector<TItem>& returnValue = *new std::vector<TItem>();
+	size_t count = items.size();
+
+	// Choose which GPU to run on, change this on a multi-GPU system.
+	handleCudaError(cudaSetDevice(0));
+
+	TItem *managedItems;
+	// Reserve room for input items in unified memory
+	handleCudaError(cudaMallocManaged(&managedItems, count * sizeof(TItem)));
+
+	memcpy(managedItems, &items[0], count * sizeof(TItem));
+
+	bool *managedResults = false;
+
+	// Reserve room for results in unified memory
+	handleCudaError(cudaMallocManaged(&managedResults, count * sizeof(bool)));
+
+	std::cout << "GPU managed allocation and copying took " << GetElapsedTime(start) << "ms\n";
+	start = std::clock();
+
+	const int threadsPerBlock = 1024;
+	int blocks = (int)ceil((float)count / threadsPerBlock);
+	filterKernel<TItem> << <blocks, threadsPerBlock >> >(managedItems, managedResults, count);
+
+	// cudaDeviceSynchronize waits for the kernel to finish, and returns any errors encountered during the launch.
+	handleCudaError(cudaDeviceSynchronize());
+
+	std::cout << "GPU filtering took " << GetElapsedTime(start) << "ms\n";
+	start = std::clock();
+
+	for (int i = 0; i < count; i++)	{
+		if (managedResults[i]) {
+			returnValue.push_back(items[i]);
+		}
+	}
+
+	std::cout << "GPU reconstructing results (on CPU) took " << GetElapsedTime(start) << "ms\n";
+
+	// Cleanup
+	cudaFree(managedItems);
+	cudaFree(managedResults);
+	cudaDeviceReset();
+
+	return returnValue;
+}
+
+template std::vector<LineItem>& filter_um<LineItem>(std::vector<LineItem>& items);
+template std::vector<Order>& filter_um<Order>(std::vector<Order>& items);

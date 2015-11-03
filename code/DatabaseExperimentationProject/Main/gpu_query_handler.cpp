@@ -16,6 +16,6 @@ void ExecuteGPUQuery(const Query& query) {
 		delete &orders;
 	}
 	else {
-		std::cerr << "Unsupported query\n";
+		std::cerr << "GPU: Unsupported query\n";
 	}
 }
