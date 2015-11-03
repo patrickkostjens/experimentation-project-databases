@@ -92,7 +92,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)Utils\;$(SolutionDir)DataReader\;$(SolutionDir)Models\;$(SolutionDir)BasicGPUFilter\;$(SolutionDir)CPUQueryHandler\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Utils\;$(SolutionDir)DataReader\;$(SolutionDir)Models\;$(SolutionDir)BasicGPUProcessor\;$(SolutionDir)CPUQueryHandler\;</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -107,7 +107,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)Utils\;$(SolutionDir)DataReader\;$(SolutionDir)Models\;$(SolutionDir)BasicGPUFilter\;$(SolutionDir)CPUQueryHandler\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Utils\;$(SolutionDir)DataReader\;$(SolutionDir)Models\;$(SolutionDir)BasicGPUProcessor\;$(SolutionDir)CPUQueryHandler\;</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -124,7 +124,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)Utils\;$(SolutionDir)DataReader\;$(SolutionDir)Models\;$(SolutionDir)BasicGPUFilter\;$(SolutionDir)CPUQueryHandler\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Utils\;$(SolutionDir)DataReader\;$(SolutionDir)Models\;$(SolutionDir)BasicGPUProcessor\;$(SolutionDir)CPUQueryHandler\;</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -143,7 +143,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)Utils\;$(SolutionDir)DataReader\;$(SolutionDir)Models\;$(SolutionDir)BasicGPUFilter\;$(SolutionDir)CPUQueryHandler\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Utils\;$(SolutionDir)DataReader\;$(SolutionDir)Models\;$(SolutionDir)BasicGPUProcessor\;$(SolutionDir)CPUQueryHandler\;</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -171,7 +171,7 @@
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BasicGPUFilter\BasicGPUFilter.vcxproj">
+    <ProjectReference Include="..\BasicGPUProcessor\BasicGPUProcessor.vcxproj">
       <Project>{76144f18-83ae-4d47-9d60-671851bc6bfc}</Project>
     </ProjectReference>
     <ProjectReference Include="..\CPUQueryHandler\CPUQueryHandler.vcxproj">

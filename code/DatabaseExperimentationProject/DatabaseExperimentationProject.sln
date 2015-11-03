@@ -11,7 +11,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Models", "Models\Models.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BasicCPUProcessor", "BasicCPUProcessor\BasicCPUProcessor.vcxproj", "{B1125B28-D6DC-4E58-969C-C8D731ECB85B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BasicGPUFilter", "BasicGPUFilter\BasicGPUFilter.vcxproj", "{76144F18-83AE-4D47-9D60-671851BC6BFC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BasicGPUProcessor", "BasicGPUProcessor\BasicGPUProcessor.vcxproj", "{76144F18-83AE-4D47-9D60-671851BC6BFC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Utils", "Utils\Utils.vcxproj", "{5A0FE3A0-EFE3-4291-B8C4-E2C091AE7799}"
 EndProject

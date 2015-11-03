@@ -24,10 +24,10 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="basic_gpu_filter.h">
+    <ClInclude Include="unified_memory_gpu_filter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="unified_memory_gpu_filter.h">
+    <ClInclude Include="basic_gpu_filter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,10 +35,10 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="basic_gpu_filter.cpp">
+    <ClCompile Include="unified_memory_gpu_filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="unified_memory_gpu_filter.cpp">
+    <ClCompile Include="basic_gpu_filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
