@@ -25,6 +25,7 @@ public:
 
 		std::vector<JoinTuple> *result = new std::vector<JoinTuple>();
 
+		// Sort both inputs
 		std::clock_t start = std::clock();
 		sort_with_lambda_selector<Left, Comparable>(_leftData, leftSelector);
 		sort_with_lambda_selector<Right, Comparable>(_rightData, rightSelector);
@@ -34,8 +35,11 @@ public:
 		std::vector<Left>::iterator leftIterator = _leftData.begin();
 		std::vector<Right>::iterator rightIterator = _rightData.begin();
 
+		// Iterate over both inputs in order to merge both inputs
 		while (leftIterator != _leftData.end() && rightIterator != _rightData.end()) {
 			if (leftSelector(*leftIterator) == rightSelector(*rightIterator)) {
+				// When a match is found, multiple records with the same join attribute may exist.
+				// Therefore we do an extra iteration over the right side to join all of them.
 				std::vector<Right>::iterator subIterator = rightIterator;
 				while (subIterator != _rightData.end() && leftSelector(*leftIterator) == rightSelector(*subIterator)) {
 					result->push_back(JoinTuple(*leftIterator, *subIterator));

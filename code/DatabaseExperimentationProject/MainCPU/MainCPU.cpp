@@ -13,17 +13,14 @@ inline double GetElapsedTime(clock_t& since) {
 }
 
 int _tmain(const int argc, const TCHAR* argv[]) {
-	std::clock_t total_start = std::clock();
+	std::clock_t start = std::clock();
 	CommandLineOptions options = GetCommandLineOptions(argc, argv);
 
 	std::cout << "Query: " << options.query << "\n";
 
-	std::clock_t start = std::clock();
-
 	ExecuteCPUQuery(options.query);
 
-	double total_duration = GetElapsedTime(total_start);
-	std::cout << "Total took " << total_duration << "ms\n";
+	std::cout << "Total took " << GetElapsedTime(start) << "ms\n";
 
 	// This should help detect memory leaks
 	std::cout << "Final memory usage: ";

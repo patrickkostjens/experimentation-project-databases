@@ -25,11 +25,14 @@ private:
 	void CreateHashTable(const std::vector<Value>* input, Key(*keySelector)(const Value), 
 		std::unordered_multimap<Key, const Value&>& hashTable) {
 		std::clock_t start = std::clock();
+
+		// Add every element to the hash table
 		for (unsigned int i = 0; i < input->size(); i++) {
 			const Value& element = input->at(i);
 			auto pair = std::pair<Key, const Value&>(keySelector(element), element);
 			hashTable.insert(pair);
 		}
+
 		std::cout << "Building hash table took " << GetElapsedTime(start) << "ms\n";
 	}
 
@@ -39,6 +42,7 @@ private:
 		std::clock_t start = std::clock();
 		std::vector<std::tuple<Left, Right>>& result = *new std::vector<std::tuple<Left, Right>>();
 
+		// Scan every element in the other input
 		for (unsigned int i = 0; i < otherInput->size(); i++) {
 			const Scanned& otherElement = otherInput->at(i);
 			Comparable key = otherSelector(otherElement);
