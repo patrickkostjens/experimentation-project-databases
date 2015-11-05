@@ -1,6 +1,3 @@
-// CPUQueryHandler.cpp : Defines the exported functions for the DLL application.
-//
-
 #include "stdafx.h"
 #include <tuple>
 #include "cpu_query_handler.h"
@@ -10,6 +7,7 @@
 #include "basic_cpu_filter.h"
 #include "data_reader.h"
 #include "cpu_sort_merge_join.h"
+#include "cpu_hash_join.h"
 
 bool LineItemFilter(LineItem item) {
 	return item.order_key == 1;
@@ -67,8 +65,22 @@ void RunCPUSortMergeJoin(std::vector<LineItem>& items, std::vector<Order>& order
 	size_t resultCount = results.size();
 
 	double duration = GetElapsedTime(start);
-	std::cout << "CPU result count: " << resultCount << "\n";
-	std::cout << "CPU joining took " << duration << "ms\n\n";
+	std::cout << "CPU sort-merge join result count: " << resultCount << "\n";
+	std::cout << "CPU sort-merge joining took " << duration << "ms\n\n";
+
+	delete &results;
+}
+
+void RunCPUHashJoin(std::vector<LineItem>& items, std::vector<Order>& orders) {
+	std::cout << "Running CPU hash join\n";
+	CPUHashJoin<Order, LineItem> processor(orders, items);
+	std::clock_t start = std::clock();
+	std::vector<std::tuple<Order, LineItem>>& results = processor.Join(&OrderJoinPropertySelector, &LineItemJoinPropertySelector);
+	size_t resultCount = results.size();
+
+	double duration = GetElapsedTime(start);
+	std::cout << "CPU hash join result count: " << resultCount << "\n";
+	std::cout << "CPU hash joining took " << duration << "ms\n\n";
 
 	delete &results;
 }
@@ -89,6 +101,7 @@ void ExecuteCPUQuery(Query query)
 		std::vector<Order>& orders = ReadAllOrders("..\\..\\orders.tbl");
 		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
 		RunCPUSortMergeJoin(items, orders);
+		RunCPUHashJoin(items, orders);
 		delete &items;
 		delete &orders;
 	}

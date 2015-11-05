@@ -136,6 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="basic_cpu_filter.h" />
+    <ClInclude Include="cpu_hash_join.h" />
     <ClInclude Include="cpu_sort_merge_join.h" />
     <ClInclude Include="sort_helper.h" />
     <ClInclude Include="stdafx.h" />
