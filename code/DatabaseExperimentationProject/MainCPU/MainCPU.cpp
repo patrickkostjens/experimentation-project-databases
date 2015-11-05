@@ -6,6 +6,7 @@
 #include <ctime>
 #include "command_line_options.h"
 #include "cpu_query_handler.h"
+#include "performance_metrics.h"
 
 inline double GetElapsedTime(clock_t& since) {
 	return (std::clock() - since) / (double)CLOCKS_PER_SEC * 1000;
@@ -23,6 +24,10 @@ int _tmain(const int argc, const TCHAR* argv[]) {
 
 	double total_duration = GetElapsedTime(total_start);
 	std::cout << "Total took " << total_duration << "ms\n";
+
+	// This should help detect memory leaks
+	std::cout << "Final memory usage: ";
+	PrintMemoryUsage();
 
 	std::cin.get();
 	return 0;
