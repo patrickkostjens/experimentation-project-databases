@@ -5,12 +5,12 @@
 #include "gpu_queries.h"
 
 void ExecuteGPUQuery(const Query& query) {
-	if (query == Query::SIMPLE_LINE_ITEM) {
+	if (query == Query::FILTER_LINE_ITEM) {
 		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
 		RunGPUFilter(items);
 		delete &items;
 	}
-	else if (query == Query::SIMPLE_ORDERS) {
+	else if (query == Query::FILTER_ORDERS) {
 		std::vector<Order>& orders = ReadAllOrders("..\\..\\orders.tbl");
 		RunGPUFilter(orders);
 		delete &orders;

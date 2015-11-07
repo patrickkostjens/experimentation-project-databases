@@ -87,17 +87,17 @@ void RunCPUHashJoin(std::vector<LineItem>& items, std::vector<Order>& orders) {
 
 void ExecuteCPUQuery(Query query)
 {
-	if (query == Query::SIMPLE_ORDERS) {
+	if (query == Query::FILTER_ORDERS) {
 		std::vector<Order>& orders = ReadAllOrders("..\\..\\orders.tbl");
 		RunCPUFilter(orders);
 		delete &orders;
 	}
-	else if (query == Query::SIMPLE_LINE_ITEM) {
+	else if (query == Query::FILTER_LINE_ITEM) {
 		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
 		RunCPUFilter(items);
 		delete &items;
 	}
-	else if (query == Query::SORT_MERGE_JOIN_LINE_ITEM_ORDERS) {
+	else if (query == Query::JOIN_LINE_ITEM_ORDERS) {
 		std::vector<Order>& orders = ReadAllOrders("..\\..\\orders.tbl");
 		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
 		RunCPUSortMergeJoin(items, orders);
