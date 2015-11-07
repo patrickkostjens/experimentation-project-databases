@@ -7,22 +7,22 @@
 #include <ctime>
 
 template<typename TItem>
-__global__ void filterKernel(TItem *item, bool *result, int maximum) {
+__global__ void filterKernel(TItem *item, bool *result, size_t totalCount) {
 	//This should never be called, but exceptions are not supported; only specialized implementations allowed
 }
 
-template<> __global__ void filterKernel<LineItem>(LineItem *item, bool *result, int maximum) {
+template<> __global__ void filterKernel<LineItem>(LineItem *item, bool *result, size_t totalCount) {
 	size_t threadIndex = threadIdx.x + blockDim.x * blockIdx.x;
 	
-	if (threadIndex < maximum) {
+	if (threadIndex < totalCount) {
 		result[threadIndex] = item[threadIndex].order_key == 1;
 	}
 }
 
-template<> __global__ void filterKernel<Order>(Order *item, bool *result, int maximum) {
+template<> __global__ void filterKernel<Order>(Order *item, bool *result, size_t totalCount) {
 	size_t threadIndex = threadIdx.x + blockDim.x * blockIdx.x;
 
-	if (threadIndex < maximum) {
+	if (threadIndex < totalCount) {
 		result[threadIndex] = item[threadIndex].order_status == 'O';
 	}
 }
