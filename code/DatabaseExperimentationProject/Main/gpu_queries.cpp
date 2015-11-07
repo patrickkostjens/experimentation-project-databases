@@ -6,83 +6,33 @@
 #include "async_gpu_filter.h"
 #include "helpers.h"
 
-void RunStandardFilter(std::vector<LineItem>& items) {
-	std::cout << "Running line items GPU processor\n";
+template<typename F>
+void RunGenericLineItemFilter(char* name, std::vector<LineItem>& orders, F& filterLambda) {
+	std::cout << "Running line items " << name << "\n";
 	std::clock_t start = std::clock();
-	std::vector<LineItem>& results = gpu_filter(items);
+	std::vector<LineItem>& results = filterLambda(orders);
 	size_t resultCount = results.size();
 
 	double duration = GetElapsedTime(start);
 	std::cout << "GPU result count: " << resultCount << "\n";
 	std::cout << "GPU processing took " << duration << "ms\n\n";
-
-	delete &results;
-}
-
-void RunUnifiedMemoryFilter(std::vector<LineItem>& items) {
-	std::cout << "Running line items GPU Unified Memory processor\n";
-	std::clock_t start = std::clock();
-	std::vector<LineItem>& results = um_gpu_filter(items);
-	size_t resultCount = results.size();
-
-	double duration = GetElapsedTime(start);
-	std::cout << "GPU Unified Memory result count: " << resultCount << "\n";
-	std::cout << "GPU Unified Memory processing took " << duration << "ms\n\n";
-
-	delete &results;
-}
-
-void RunAsyncFilter(std::vector<LineItem>& items) {
-	std::cout << "Running line items GPU Async processor\n";
-	std::clock_t start = std::clock();
-	std::vector<LineItem>& results = gpu_filter_async(items);
-	size_t resultCount = results.size();
-
-	double duration = GetElapsedTime(start);
-	std::cout << "GPU Async result count: " << resultCount << "\n";
-	std::cout << "GPU Async processing took " << duration << "ms\n\n";
 
 	delete &results;
 }
 
 void RunGPUFilter(std::vector<LineItem>& items) {
-	RunStandardFilter(items);
+	RunGenericLineItemFilter("standard GPU processor", items, gpu_filter<LineItem>);
 	// First run takes significantly longer, so run twice
-	RunStandardFilter(items);
-	RunUnifiedMemoryFilter(items);
-	RunAsyncFilter(items);
+	RunGenericLineItemFilter("standard GPU processor", items, gpu_filter<LineItem>);
+	RunGenericLineItemFilter("Unified Memory GPU processor", items, um_gpu_filter<LineItem>);
+	RunGenericLineItemFilter("async GPU processor", items, gpu_filter_async<LineItem>);
 }
 
-void RunStandardFilter(std::vector<Order>& orders) {
-	std::cout << "Running orders GPU processor\n";
+template<typename F>
+void RunGenericOrderFilter(char* name, std::vector<Order>& orders, F& filterLambda) {
+	std::cout << "Running orders " << name << "\n";
 	std::clock_t start = std::clock();
-	std::vector<Order>& results = gpu_filter(orders);
-	size_t resultCount = results.size();
-
-	double duration = GetElapsedTime(start);
-	std::cout << "GPU result count: " << resultCount << "\n";
-	std::cout << "GPU processing took " << duration << "ms\n\n";
-
-	delete &results;
-}
-
-void RunUnifiedMemoryFilter(std::vector<Order>& orders) {
-	std::cout << "Running orders GPU UnifiedMemory processor\n";
-	std::clock_t start = std::clock();
-	std::vector<Order>& results = um_gpu_filter(orders);
-	size_t resultCount = results.size();
-
-	double duration = GetElapsedTime(start);
-	std::cout << "GPU result count: " << resultCount << "\n";
-	std::cout << "GPU processing took " << duration << "ms\n\n";
-
-	delete &results;
-}
-
-void RunAsyncFilter(std::vector<Order>& orders) {
-	std::cout << "Running orders GPU async processor\n";
-	std::clock_t start = std::clock();
-	std::vector<Order>& results = gpu_filter_async(orders);
+	std::vector<Order>& results = filterLambda(orders);
 	size_t resultCount = results.size();
 
 	double duration = GetElapsedTime(start);
@@ -93,9 +43,9 @@ void RunAsyncFilter(std::vector<Order>& orders) {
 }
 
 void RunGPUFilter(std::vector<Order>& orders) {
-	RunStandardFilter(orders);
+	RunGenericOrderFilter("standard GPU processor", orders, gpu_filter<Order>);
 	// First run takes significantly longer, so run twice
-	RunStandardFilter(orders);
-	RunUnifiedMemoryFilter(orders);
-	RunAsyncFilter(orders);
+	RunGenericOrderFilter("standard GPU processor", orders, gpu_filter<Order>);
+	RunGenericOrderFilter("Unfied Memory GPU processor", orders, um_gpu_filter<Order>);
+	RunGenericOrderFilter("async GPU processor", orders, gpu_filter_async<Order>);
 }
