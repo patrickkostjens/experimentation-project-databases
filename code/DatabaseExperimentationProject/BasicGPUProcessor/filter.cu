@@ -180,16 +180,28 @@ std::vector<TItem>& filter_async(std::vector<TItem>& items) {
 	size_t perStreamCount = count / streamCount;
 	const int threadsPerBlock = 1024;
 	int blocks = (int)ceil((float)count / threadsPerBlock);
+
+	/* Depending on the GPU's capabilities this way of calling or calling all three CUDA functions in a single loop might be faster.
+	   For details, see: http://devblogs.nvidia.com/parallelforall/how-overlap-data-transfers-cuda-cc/ */
+	// Copy input to GPU
 	for (int i = 0; i < streamCount; i++) {
 		size_t transferCount = perStreamCount;
 		if (i == streamCount - 1) transferCount = count - i * transferCount;
 
-		// Copy input to GPU
 		handleCudaError(cudaMemcpyAsync(&deviceItems[i*perStreamCount], &pinnedItems[i*perStreamCount], transferCount * sizeof(TItem), cudaMemcpyHostToDevice, streams[i]));
+	}
+	// Execute kernels
+	for (int i = 0; i < streamCount; i++) {
+		size_t transferCount = perStreamCount;
+		if (i == streamCount - 1) transferCount = count - i * transferCount;
 
-		filterKernel<TItem> <<<blocks, threadsPerBlock, 0, streams[i]>>>(&deviceItems[i*perStreamCount], &deviceResults[i*perStreamCount], transferCount);
+		filterKernel<TItem> << <blocks, threadsPerBlock, 0, streams[i] >> >(&deviceItems[i*perStreamCount], &deviceResults[i*perStreamCount], transferCount);
+	}
+	// Copy output vector from GPU buffer to host memory.
+	for (int i = 0; i < streamCount; i++) {
+		size_t transferCount = perStreamCount;
+		if (i == streamCount - 1) transferCount = count - i * transferCount;
 
-		// Copy output vector from GPU buffer to host memory.
 		handleCudaError(cudaMemcpyAsync(&hostResults[i*perStreamCount], &deviceResults[i*perStreamCount], transferCount * sizeof(bool), cudaMemcpyDeviceToHost, streams[i]));
 	}
 
