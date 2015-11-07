@@ -144,3 +144,80 @@ std::vector<TItem>& filter_um(std::vector<TItem>& items) {
 
 template std::vector<LineItem>& filter_um<LineItem>(std::vector<LineItem>& items);
 template std::vector<Order>& filter_um<Order>(std::vector<Order>& items);
+
+template<typename TItem>
+std::vector<TItem>& filter_async(std::vector<TItem>& items) {
+	std::clock_t start = std::clock();
+	std::vector<TItem>& returnValue = *new std::vector<TItem>();
+	size_t count = items.size();
+
+	TItem *deviceItems;
+	TItem *pinnedItems;
+	bool *deviceResults = false;
+	bool *hostResults = false;
+	hostResults = (bool*)malloc(count * sizeof(bool));
+	// Choose which GPU to run on, change this on a multi-GPU system.
+	handleCudaError(cudaSetDevice(0));
+
+	// Prepare streams
+	const int streamCount = 4;
+	cudaStream_t *streams;
+	streams = (cudaStream_t*)malloc(streamCount * sizeof(cudaStream_t));
+	for (int i = 0; i < streamCount; i++) {
+		handleCudaError(cudaStreamCreate(&streams[i]));
+	}
+
+	// Reserve pinned host memory for data
+	handleCudaError(cudaMallocHost((void**)&pinnedItems, count * sizeof(TItem)));
+	// Copy input to pinned memory
+	memcpy(pinnedItems, &items[0], count * sizeof(TItem));
+
+	// Reserve room for input in GPU memory
+	handleCudaError(cudaMalloc((void**)&deviceItems, count * sizeof(TItem)));
+	// Reserve room for results in GPU memory
+	handleCudaError(cudaMalloc((void**)&deviceResults, count * sizeof(bool)));
+
+	size_t perStreamCount = count / streamCount;
+	const int threadsPerBlock = 1024;
+	int blocks = (int)ceil((float)count / threadsPerBlock);
+	for (int i = 0; i < streamCount; i++) {
+		size_t transferCount = perStreamCount;
+		if (i == streamCount - 1) transferCount = count - i * transferCount;
+
+		// Copy input to GPU
+		handleCudaError(cudaMemcpyAsync(&deviceItems[i*perStreamCount], &pinnedItems[i*perStreamCount], transferCount * sizeof(TItem), cudaMemcpyHostToDevice, streams[i]));
+
+		filterKernel<TItem> <<<blocks, threadsPerBlock, 0, streams[i]>>>(&deviceItems[i*perStreamCount], &deviceResults[i*perStreamCount], transferCount);
+
+		// Copy output vector from GPU buffer to host memory.
+		handleCudaError(cudaMemcpyAsync(&hostResults[i*perStreamCount], &deviceResults[i*perStreamCount], transferCount * sizeof(bool), cudaMemcpyDeviceToHost, streams[i]));
+	}
+
+	// cudaDeviceSynchronize waits for the kernel and copy operations to finish, and returns any errors encountered during the launch.
+	handleCudaError(cudaDeviceSynchronize());
+
+	for (int i = 0; i < streamCount; i++) {
+		handleCudaError(cudaStreamDestroy(streams[i]));
+	}
+
+	std::cout << "GPU allocation, copying and filtering took " << GetElapsedTime(start) << "ms\n";
+	start = std::clock();
+
+	for (int i = 0; i < count; i++)	{
+		if (hostResults[i]) {
+			returnValue.push_back(items[i]);
+		}
+	}
+
+	std::cout << "GPU reconstructing results (on CPU) took " << GetElapsedTime(start) << "ms\n";
+
+	// Cleanup
+	free(hostResults);
+	cudaFreeHost(pinnedItems);
+	cudaDeviceReset();
+
+	return returnValue;
+}
+
+template std::vector<LineItem>& filter_async<LineItem>(std::vector<LineItem>& items);
+template std::vector<Order>& filter_async<Order>(std::vector<Order>& items);
