@@ -75,7 +75,7 @@ std::vector<TItem>& filter_standard(std::vector<TItem>& items) {
 	// Copy output vector from GPU buffer to host memory.
 	handleCudaError(cudaMemcpy(hostResults, deviceResults, count * sizeof(bool), cudaMemcpyDeviceToHost));
 
-	for (int i = 0; i < count; i++)	{
+	for (unsigned int i = 0; i < count; i++)	{
 		if (hostResults[i]) {
 			returnValue.push_back(items[i]);
 		}
