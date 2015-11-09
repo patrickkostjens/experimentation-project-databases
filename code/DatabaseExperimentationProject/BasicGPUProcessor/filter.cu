@@ -126,7 +126,7 @@ std::vector<TItem>& filter_um(std::vector<TItem>& items) {
 	std::cout << "GPU filtering took " << GetElapsedTime(start) << "ms\n";
 	start = std::clock();
 
-	for (int i = 0; i < count; i++)	{
+	for (unsigned int i = 0; i < count; i++) {
 		if (managedResults[i]) {
 			returnValue.push_back(items[i]);
 		}
@@ -215,7 +215,7 @@ std::vector<TItem>& filter_async(std::vector<TItem>& items) {
 	std::cout << "GPU allocation, copying and filtering took " << GetElapsedTime(start) << "ms\n";
 	start = std::clock();
 
-	for (int i = 0; i < count; i++)	{
+	for (unsigned int i = 0; i < count; i++) {
 		if (hostResults[i]) {
 			returnValue.push_back(items[i]);
 		}
