@@ -15,33 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="basic_cpu_filter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cpu_sort_merge_join.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sort_helper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cpu_hash_join.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="b_tree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="b_tree_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
