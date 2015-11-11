@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <vector>
 
 template <typename T>
@@ -96,8 +95,12 @@ public:
 	void insert(T value, unsigned int nodeSize) {
 		// Leaf node
 		if (_children.size() == 0) {
-			_values.push_back(value);
-			std::sort(_values.begin(), _values.end());
+			std::vector<T>::iterator valueIterator = _values.begin();
+			while (valueIterator != _values.end() && *valueIterator < value) {
+				valueIterator++;
+			}
+			_values.insert(valueIterator, value);
+
 			if (_values.size() <= nodeSize) {
 				return;
 			}
