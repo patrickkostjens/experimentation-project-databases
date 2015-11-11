@@ -20,8 +20,7 @@ private:
 		_parent = NULL;
 	};
 
-	void insert_up(T value, BTreeNode* rightChild) {
-		// TODO: Fix another push up
+	void insert_up(T value, BTreeNode* rightChild, unsigned int nodeSize) {
 		std::vector<T>::iterator valueIterator;
 		std::vector<BTreeNode*>::iterator childIterator;
 		valueIterator = _values.begin();
@@ -41,11 +40,54 @@ private:
 		_values.insert(valueIterator, value);
 		childIterator++;
 		_children.insert(childIterator, rightChild);
+
+		if (_values.size() > nodeSize) {
+			split(nodeSize);
+		}
 	};
 
 	void set_parent(BTreeNode<T>* parent) {
 		_parent = parent;
 	}
+
+	void split(unsigned int nodeSize) {
+		unsigned int medianIndex = _values.size() / 2;
+		T median = _values[medianIndex];
+		// Take the values smaller and bigger than the median for the new children
+		std::vector<T> leftValues(_values.begin(), _values.begin() + medianIndex);
+		std::vector<T> rightValues(_values.begin() + medianIndex + 1, _values.end());
+
+		std::vector<BTreeNode*> leftChildren, rightChildren;
+		// Take the children linked to the above values for the new children
+		if (_children.size() > 0) {
+			leftChildren = std::vector<BTreeNode*>(_children.begin(), _children.begin() + medianIndex + 1);
+			rightChildren = std::vector<BTreeNode*>(_children.begin() + medianIndex + 1, _children.end());
+		}
+
+		// This node becomes the left child
+		_values = leftValues;
+		_children = leftChildren;
+
+		BTreeNode* rightNode = new BTreeNode(rightValues, rightChildren);
+
+		if (!_parent) {
+			// This node is the current root node so we create a new parent
+			std::vector<T> parentValues;
+			parentValues.push_back(median);
+			std::vector<BTreeNode*> parentChildren;
+			parentChildren.push_back(this);
+			parentChildren.push_back(rightNode);
+
+			_parent = new BTreeNode(parentValues, parentChildren);
+			rightNode->set_parent(_parent);
+		}
+		else {
+			rightNode->set_parent(_parent);
+			// Insert the median in the parent node
+			_parent->insert_up(median, rightNode, nodeSize);
+		}
+	}
+
 public:
 	BTreeNode() {
 		_parent = NULL;
@@ -54,45 +96,12 @@ public:
 	void insert(T value, unsigned int nodeSize) {
 		// Leaf node
 		if (_children.size() == 0) {
-			if (_values.size() < nodeSize) {
-				_values.push_back(value);
-				std::sort(_values.begin(), _values.end());
-				return;
-			}
-			// Split node
 			_values.push_back(value);
 			std::sort(_values.begin(), _values.end());
-			T median = _values[_values.size() / 2];
-			std::vector<T> leftValues;
-			for (unsigned int i = 0; i < _values.size() / 2; i++) {
-				leftValues.push_back(_values[i]);
+			if (_values.size() <= nodeSize) {
+				return;
 			}
-			std::vector<T> rightValues;
-			for (unsigned int i = (_values.size() / 2) + 1; i < _values.size(); i++) {
-				rightValues.push_back(_values[i]);
-			}
-
-			// This node becomes the left leaf
-			_values = leftValues;
-
-			BTreeNode* rightNode = new BTreeNode(rightValues);
-
-			if (!_parent) {
-				// This node is the current root node so we create a new parent
-				std::vector<T> parentValues;
-				parentValues.push_back(median);
-				std::vector<BTreeNode*> parentChildren;
-				parentChildren.push_back(this);
-				parentChildren.push_back(rightNode);
-
-				_parent = new BTreeNode(parentValues, parentChildren);
-				rightNode->set_parent(_parent);
-			}
-			else {
-				rightNode->set_parent(_parent);
-				// Insert the median in the parent node
-				_parent->insert_up(median, rightNode);
-			}
+			split(nodeSize);
 			return;
 		}
 

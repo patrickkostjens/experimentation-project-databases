@@ -99,5 +99,21 @@ namespace BasicCPUProcessorTests
 			Assert::AreEqual(7, tree.size());
 			Assert::AreEqual(std::string("{{1(1);2(1);3(1);}4(0);{5(1);}6(0);{7(1);}}"), tree.print());
 		};
+
+		TEST_METHOD(TestDoublePushUp) {
+			BTree<int> tree(3);
+			tree.insert(7);
+			tree.insert(6);
+			tree.insert(5);
+			tree.insert(4);
+			tree.insert(3);
+			tree.insert(2);
+			tree.insert(1);
+			tree.insert(0);
+			tree.insert(-1);
+			tree.insert(-2);
+			Assert::AreEqual(10, tree.size());
+			Assert::AreEqual(std::string("{{{-2(2);-1(2);}0(1);{1(2);}2(1);{3(2);}}4(0);{{5(2);}6(1);{7(2);}}}"), tree.print());
+		};
 	};
 }
