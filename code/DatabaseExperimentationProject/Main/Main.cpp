@@ -3,11 +3,11 @@
 
 #include "stdafx.h"
 #include <iostream>
-#include "command_line_options.h"
-#include "cpu_query_handler.h"
+#include "../Utils/command_line_options.h"
+#include "../CPUQueryHandler/cpu_query_handler.h"
 #include "gpu_query_handler.h"
 #include "helpers.h"
-#include "performance_metrics.h"
+#include "../Utils/performance_metrics.h"
 
 
 int _tmain(const int argc, const TCHAR* argv[]) {

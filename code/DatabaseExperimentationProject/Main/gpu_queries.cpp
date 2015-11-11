@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include <iostream>
-#include "models.h"
-#include "basic_gpu_filter.h"
-#include "unified_memory_gpu_filter.h"
-#include "async_gpu_filter.h"
+#include "../Models/models.h"
+#include "../BasicGPUProcessor/basic_gpu_filter.h"
+#include "../BasicGPUProcessor/unified_memory_gpu_filter.h"
+#include "../BasicGPUProcessor/async_gpu_filter.h"
 #include "helpers.h"
 
 template<typename Filter, typename Item>

@@ -1,6 +1,3 @@
-#include "stdafx.h"
-#include "models.h"
-
 #ifdef BASICGPUPROCESSOR_EXPORTS
 #define BASICGPUPROCESSOR_API __declspec(dllexport) 
 #else

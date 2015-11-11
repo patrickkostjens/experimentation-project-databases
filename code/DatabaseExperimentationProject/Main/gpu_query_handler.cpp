@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "data_reader.h"
-#include "command_line_options.h"
+#include "../DataReader/data_reader.h"
+#include "../Utils/command_line_options.h"
 #include <iostream>
 #include "gpu_queries.h"
 

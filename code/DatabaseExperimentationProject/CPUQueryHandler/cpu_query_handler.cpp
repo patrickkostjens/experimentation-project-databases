@@ -3,11 +3,11 @@
 #include "cpu_query_handler.h"
 #include "iostream"
 #include "vector"
-#include "models.h"
-#include "basic_cpu_filter.h"
-#include "data_reader.h"
-#include "cpu_sort_merge_join.h"
-#include "cpu_hash_join.h"
+#include "../Models/models.h"
+#include "../BasicCPUProcessor/basic_cpu_filter.h"
+#include "../DataReader/data_reader.h"
+#include "../BasicCPUProcessor/cpu_sort_merge_join.h"
+#include "../BasicCPUProcessor/cpu_hash_join.h"
 
 bool LineItemFilter(LineItem item) {
 	return item.order_key == 1;

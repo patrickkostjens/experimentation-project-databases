@@ -1,4 +1,4 @@
-#include "command_line_options.h"
+#include "../Utils/command_line_options.h"
 
 #ifdef CPUQUERYHANDLER_EXPORTS
 #define CPUQUERYHANDLER_API __declspec(dllexport)
