@@ -9,14 +9,6 @@ struct IndexItem {
 		key = k;
 		value = v;
 	};
-
-	friend bool operator< (const IndexItem &i1, const IndexItem &i2) {
-		return i1.key < i2.key;
-	};
-
-	friend bool operator== (const IndexItem &i1, const IndexItem &i2) {
-		return i1.key == i2.key;
-	};
 };
 
 template <typename Key, typename Value>
@@ -43,7 +35,7 @@ private:
 		std::vector<BTreeNode*>::iterator childIterator;
 		valueIterator = _values.begin();
 		childIterator = _children.begin();
-		while (valueIterator != _values.end() && *valueIterator < element) {
+		while (valueIterator != _values.end() && valueIterator->key < element.key) {
 			valueIterator++;
 			childIterator++;
 		}
