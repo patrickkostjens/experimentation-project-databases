@@ -8,9 +8,14 @@
 #include "../DataReader/data_reader.h"
 #include "../BasicCPUProcessor/cpu_sort_merge_join.h"
 #include "../BasicCPUProcessor/cpu_hash_join.h"
+#include "../BasicCPUProcessor/indexed_cpu_filter.h"
 
 bool LineItemFilter(LineItem item) {
 	return item.order_key == 1;
+}
+
+int LineItemFilterPropertySelector(LineItem item) {
+	return item.order_key;
 }
 
 bool OrderFilter(Order order) {
@@ -48,6 +53,20 @@ void RunCPUFilter(std::vector<Order>& orders) {
 	BasicCPUFilter<Order> processor(orders);
 	std::clock_t start = std::clock();
 	std::vector<Order>& results = processor.Filter(&OrderFilter);
+	size_t resultCount = results.size();
+
+	double duration = GetElapsedTime(start);
+	std::cout << "CPU result count: " << resultCount << "\n";
+	std::cout << "CPU Filtering took " << duration << "ms\n\n";
+
+	delete &results;
+}
+
+void RunIndexedCPUFilter(std::vector<LineItem>& items) {
+	std::cout << "Running indexed line items CPU filter\n";
+	IndexedCPUFilter<LineItem, int> processor(items);
+	std::clock_t start = std::clock();
+	std::vector<LineItem>& results = processor.Filter(&LineItemFilterPropertySelector, 1);
 	size_t resultCount = results.size();
 
 	double duration = GetElapsedTime(start);
@@ -95,6 +114,11 @@ void ExecuteCPUQuery(Query query)
 	else if (query == Query::FILTER_LINE_ITEM) {
 		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
 		RunCPUFilter(items);
+		delete &items;
+	}
+	else if (query == Query::INDEXED_FILTER_LINE_ITEM) {
+		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
+		RunIndexedCPUFilter(items);
 		delete &items;
 	}
 	else if (query == Query::JOIN_LINE_ITEM_ORDERS) {
