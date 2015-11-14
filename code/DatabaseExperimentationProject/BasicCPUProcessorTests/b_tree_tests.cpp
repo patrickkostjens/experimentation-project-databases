@@ -170,6 +170,7 @@ namespace BasicCPUProcessorTests
 			tree.insert(1, 9);
 			tree.insert(1, 10);
 			tree.insert(1, 8);
+			tree.insert(2, 7);
 			tree.insert(1, 11);
 			tree.insert(1, 7);
 			std::vector<int> result = tree.find(1);

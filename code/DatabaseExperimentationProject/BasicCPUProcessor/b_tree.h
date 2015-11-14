@@ -38,24 +38,24 @@ private:
 		_parent = NULL;
 	};
 
-	void insert_up(IndexItem<Key, Value> value, BTreeNode* rightChild, unsigned int nodeSize) {
+	void insert_up(IndexItem<Key, Value> element, BTreeNode* rightChild, unsigned int nodeSize) {
 		std::vector<IndexItem<Key, Value>>::iterator valueIterator;
 		std::vector<BTreeNode*>::iterator childIterator;
 		valueIterator = _values.begin();
 		childIterator = _children.begin();
-		while (valueIterator != _values.end() && *valueIterator < value) {
+		while (valueIterator != _values.end() && *valueIterator < element) {
 			valueIterator++;
 			childIterator++;
 		}
 
 		// Biggest value; insert at end
 		if (valueIterator == _values.end()) {
-			_values.push_back(value);
+			_values.push_back(element);
 			_children.push_back(rightChild);
 			return;
 		}
 
-		_values.insert(valueIterator, value);
+		_values.insert(valueIterator, element);
 		childIterator++;
 		_children.insert(childIterator, rightChild);
 
