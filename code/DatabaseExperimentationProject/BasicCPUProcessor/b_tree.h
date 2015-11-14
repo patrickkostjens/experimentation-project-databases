@@ -237,6 +237,13 @@ public:
 	BTreeNode* get_parent() {
 		return _parent;
 	};
+
+	~BTreeNode() {
+		for (std::vector<BTreeNode*>::iterator it = _children.begin(); it != _children.end(); ++it)
+		{
+			delete (*it);
+		}
+	};
 };
 
 template <typename Key, typename Value>
@@ -275,5 +282,9 @@ public:
 
 	std::string print() {
 		return _root->print(0);
+	};
+
+	~BTree() {
+		delete _root;
 	};
 };
