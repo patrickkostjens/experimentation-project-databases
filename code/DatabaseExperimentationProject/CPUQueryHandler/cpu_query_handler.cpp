@@ -22,6 +22,10 @@ bool OrderFilter(Order order) {
 	return order.order_status == 'O';
 }
 
+char OrderFilterPropertySelector(Order order) {
+	return order.order_status;
+}
+
 int LineItemJoinPropertySelector(LineItem item) {
 	return item.order_key;
 }
@@ -71,7 +75,21 @@ void RunIndexedCPUFilter(std::vector<LineItem>& items) {
 
 	double duration = GetElapsedTime(start);
 	std::cout << "CPU result count: " << resultCount << "\n";
-	std::cout << "CPU Filtering took " << duration << "ms\n\n";
+	std::cout << "CPU Indexed filtering took " << duration << "ms\n\n";
+
+	delete &results;
+}
+
+void RunIndexedCPUFilter(std::vector<Order>& orders) {
+	std::cout << "Running indexed orders CPU filter\n";
+	IndexedCPUFilter<Order, char> processor(orders);
+	std::clock_t start = std::clock();
+	std::vector<Order>& results = processor.Filter(&OrderFilterPropertySelector, 'O');
+	size_t resultCount = results.size();
+
+	double duration = GetElapsedTime(start);
+	std::cout << "CPU result count: " << resultCount << "\n";
+	std::cout << "CPU Indexed filtering took " << duration << "ms\n\n";
 
 	delete &results;
 }
@@ -120,6 +138,11 @@ void ExecuteCPUQuery(Query query)
 		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
 		RunIndexedCPUFilter(items);
 		delete &items;
+	}
+	else if (query == Query::INDEXED_FILTER_ORDERS) {
+		std::vector<Order>& orders = ReadAllOrders("..\\..\\orders.tbl");
+		RunIndexedCPUFilter(orders);
+		delete &orders;
 	}
 	else if (query == Query::JOIN_LINE_ITEM_ORDERS) {
 		std::vector<Order>& orders = ReadAllOrders("..\\..\\orders.tbl");
