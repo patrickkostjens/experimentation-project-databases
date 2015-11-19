@@ -44,12 +44,12 @@ private:
 		if (valueIterator == _values.end()) {
 			_values.push_back(element);
 			_children.push_back(rightChild);
-			return;
 		}
-
-		_values.insert(valueIterator, element);
-		childIterator++;
-		_children.insert(childIterator, rightChild);
+		else {
+			_values.insert(valueIterator, element);
+			childIterator++;
+			_children.insert(childIterator, rightChild);
+		}
 
 		if (_values.size() > nodeSize) {
 			split(nodeSize);
@@ -58,7 +58,7 @@ private:
 
 	void set_parent(BTreeNode* parent) {
 		_parent = parent;
-	}
+	};
 
 	void split(unsigned int nodeSize) {
 		unsigned int medianIndex = _values.size() / 2;
@@ -79,6 +79,13 @@ private:
 		_children = leftChildren;
 
 		BTreeNode* rightNode = new BTreeNode(rightValues, rightChildren);
+
+		std::vector<BTreeNode*>::iterator childIterator;
+		childIterator = rightChildren.begin();
+		while (childIterator != rightChildren.end()) {
+			(*childIterator)->_parent = rightNode;
+			childIterator++;
+		}
 
 		if (!_parent) {
 			// This node is the current root node so we create a new parent

@@ -182,5 +182,19 @@ namespace BasicCPUProcessorTests
 			Assert::IsTrue(vector_contains(result, 10));
 			Assert::IsTrue(vector_contains(result, 11));
 		};
+
+		TEST_METHOD(TestMultipleSplitUpRightNodeWorks) {
+			/* This test tests for a bug that occurs when the parent of the new right 
+			children in a node are not set when splitting a node. This would cause the
+			children to be attached to the wrong node therefore creating an unordered
+			tree where not all values can be found.*/
+			BTree<int, int> tree(2);
+			for (int i = 0; i < 9; i++) {
+				tree.insert(i, i);
+			}
+			for (int i = 0; i < 9; i++) {
+				Assert::IsTrue(tree.contains(i));
+			}
+		};
 	};
 }
