@@ -15,6 +15,13 @@ void ExecuteGPUQuery(const Query& query) {
 		RunGPUFilter(orders);
 		delete &orders;
 	}
+	else if (query == Query::JOIN_LINE_ITEM_ORDERS) {
+		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
+		std::vector<Order>& orders = ReadAllOrders("..\\..\\orders.tbl");
+		RunGPUHashJoin(items, orders);
+		delete &items;
+		delete &orders;
+	}
 	else {
 		std::cerr << "GPU: Unsupported query\n";
 	}

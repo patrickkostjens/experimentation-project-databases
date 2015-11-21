@@ -1,9 +1,6 @@
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
+#include "cuda_helpers.cuh"
 #include "stdafx.h"
-#include <stdio.h>
 #include <iostream>
-#include <ctime>
 
 template<typename TItem>
 __global__ void filterKernel(TItem *item, bool *result, size_t totalCount) {
@@ -23,18 +20,6 @@ template<> __global__ void filterKernel<Order>(Order *item, bool *result, size_t
 
 	if (threadIndex < totalCount) {
 		result[threadIndex] = item[threadIndex].order_status == 'O';
-	}
-}
-
-inline double GetElapsedTime(clock_t& since) {
-	return (std::clock() - since) / (double)CLOCKS_PER_SEC * 1000;
-}
-
-void handleCudaError(cudaError_t status) {
-	if (status != cudaSuccess) {
-		fprintf(stderr, "CUDA error: %s", cudaGetErrorString(status));
-		cudaDeviceReset();
-		throw cudaGetErrorString(status);
 	}
 }
 
