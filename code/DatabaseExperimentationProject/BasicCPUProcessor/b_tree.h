@@ -61,7 +61,7 @@ private:
 	};
 
 	void split(unsigned int nodeSize) {
-		unsigned int medianIndex = _values.size() / 2;
+		size_t medianIndex = _values.size() / 2;
 		IndexItem<Key, Value> median = _values[medianIndex];
 		// Take the values smaller and bigger than the median for the new children
 		std::vector<IndexItem<Key, Value>> leftValues(_values.begin(), _values.begin() + medianIndex);
