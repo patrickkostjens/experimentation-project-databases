@@ -32,7 +32,7 @@ std::vector<Output>& scatter(std::vector<Input> h_input, std::vector<ptrdiff_t> 
 	handleCudaError(cudaSetDevice(0));
 	handleCudaError(cudaMalloc((void**)&d_input, h_itemCount * sizeof(Input)));
 	handleCudaError(cudaMemcpy(d_input, &h_input[0], h_itemCount * sizeof(Input), cudaMemcpyHostToDevice));
-	handleCudaError(cudaMalloc((void**)&d_indexes, h_itemCount * sizeof(Input)));
+	handleCudaError(cudaMalloc((void**)&d_indexes, h_itemCount * sizeof(ptrdiff_t)));
 	handleCudaError(cudaMemcpy(d_indexes, &h_indexes[0], h_itemCount * sizeof(ptrdiff_t), cudaMemcpyHostToDevice));
 	handleCudaError(cudaMalloc((void**)&d_result, h_itemCount * sizeof(Output)));
 
