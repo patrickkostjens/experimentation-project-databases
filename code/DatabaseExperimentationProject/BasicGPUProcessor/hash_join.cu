@@ -1,6 +1,7 @@
 #include "cuda_helpers.cuh"
 #include "stdafx.h"
 #include <iostream>
+#include <thrust\scan.h>
 
 #pragma region Scatter and gather
 template<typename Input, typename Output>
@@ -72,6 +73,13 @@ std::vector<Output>& scatter_gather(std::vector<Input> h_input, std::vector<ptrd
 	return h_result;
 };
 #pragma endregion
+
+std::vector<int>& scan(std::vector<int> h_input) {
+	std::vector<int>& h_result = *new std::vector<int>();
+	h_result.resize(h_input.size());
+	thrust::inclusive_scan(h_input.begin(), h_input.end(), h_result.begin());
+	return h_result;
+}
 
 template<typename Left, typename Right>
 std::vector<std::tuple<Left, Right>>& hash_join(std::vector<Left>& leftItems, std::vector<Right>& rightItems) {
