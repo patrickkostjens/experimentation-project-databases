@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include <iostream>
 
-#pragma region Scatter
+#pragma region Scatter and gather
 template<typename Input, typename Output>
 //TODO: Implement specific scatter operation
 __device__ Output scatterInput(Input d_input) {
@@ -19,7 +19,22 @@ __global__ void scatterKernel(Input *d_input, Output *d_output, ptrdiff_t *d_ind
 };
 
 template<typename Input, typename Output>
-std::vector<Output>& scatter(std::vector<Input> h_input, std::vector<ptrdiff_t> h_indexes) {
+//TODO: Implement specific gather operation
+__device__ Output gatherInput(Input d_input) {
+	return d_input;
+};
+
+template<typename Input, typename Output>
+__global__ void gatherKernel(Input *d_input, Output *d_output, ptrdiff_t *d_indexes, size_t d_totalCount) {
+	size_t d_threadIndex = threadIdx.x + blockDim.x * blockIdx.x;
+
+	if (d_threadIndex < d_totalCount) {
+		d_output[d_threadIndex] = gatherInput<Input, Output>(d_input[d_indexes[d_threadIndex]]);
+	}
+};
+
+template<typename Input, typename Output>
+std::vector<Output>& scatter_gather(std::vector<Input> h_input, std::vector<ptrdiff_t> h_indexes, bool scatter) {
 	if (h_indexes.size() != h_input.size()) {
 		throw "Wrong number of indexes provided";
 	}
@@ -38,7 +53,12 @@ std::vector<Output>& scatter(std::vector<Input> h_input, std::vector<ptrdiff_t> 
 
 	const int h_threadsPerBlock = 1024;
 	int h_blocks = (int)ceil((float)h_itemCount / h_threadsPerBlock);
-	scatterKernel<Input, Output> <<<h_blocks, h_threadsPerBlock>>>(d_input, d_result, d_indexes, h_itemCount);
+	if (scatter) {
+		scatterKernel<Input, Output> <<<h_blocks, h_threadsPerBlock>>>(d_input, d_result, d_indexes, h_itemCount);
+	}
+	else {
+		gatherKernel<Input, Output> <<<h_blocks, h_threadsPerBlock>>>(d_input, d_result, d_indexes, h_itemCount);
+	}
 
 	std::vector<Output>& h_result = *new std::vector<Output>();
 	h_result.resize(h_itemCount);
