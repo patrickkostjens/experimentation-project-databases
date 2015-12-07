@@ -10,28 +10,35 @@ __device__ Output scatterInput(Input d_input) {
 };
 
 template<typename Input, typename Output>
-__global__ void scatterKernel(Input *d_input, Output *d_output, size_t d_totalCount) {
+__global__ void scatterKernel(Input *d_input, Output *d_output, ptrdiff_t *d_indexes, size_t d_totalCount) {
 	size_t d_threadIndex = threadIdx.x + blockDim.x * blockIdx.x;
 
 	if (d_threadIndex < d_totalCount) {
-		d_output[d_threadIndex] = scatterInput<Input, Output>(d_input[d_threadIndex]);
+		d_output[d_indexes[d_threadIndex]] = scatterInput<Input, Output>(d_input[d_threadIndex]);
 	}
 };
 
 template<typename Input, typename Output>
-std::vector<Output>& scatter(std::vector<Input> h_input) {
+std::vector<Output>& scatter(std::vector<Input> h_input, std::vector<ptrdiff_t> h_indexes) {
+	if (h_indexes.size() != h_input.size()) {
+		throw "Wrong number of indexes provided";
+	}
+
 	size_t h_itemCount = h_input.size();
 	Input *d_input;
 	Output *d_result;
+	ptrdiff_t *d_indexes;
 
 	handleCudaError(cudaSetDevice(0));
 	handleCudaError(cudaMalloc((void**)&d_input, h_itemCount * sizeof(Input)));
 	handleCudaError(cudaMemcpy(d_input, &h_input[0], h_itemCount * sizeof(Input), cudaMemcpyHostToDevice));
+	handleCudaError(cudaMalloc((void**)&d_indexes, h_itemCount * sizeof(Input)));
+	handleCudaError(cudaMemcpy(d_indexes, &h_indexes[0], h_itemCount * sizeof(ptrdiff_t), cudaMemcpyHostToDevice));
 	handleCudaError(cudaMalloc((void**)&d_result, h_itemCount * sizeof(Output)));
 
 	const int h_threadsPerBlock = 1024;
 	int h_blocks = (int)ceil((float)h_itemCount / h_threadsPerBlock);
-	scatterKernel<Input, Output> <<<h_blocks, h_threadsPerBlock>>>(d_input, d_result, h_itemCount);
+	scatterKernel<Input, Output> <<<h_blocks, h_threadsPerBlock>>>(d_input, d_result, d_indexes, h_itemCount);
 
 	std::vector<Output>& h_result = *new std::vector<Output>();
 	h_result.resize(h_itemCount);
