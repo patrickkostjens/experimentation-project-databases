@@ -5,6 +5,7 @@
 #include <thrust/device_vector.h>
 #include <thrust/scatter.h>
 #include <thrust/gather.h>
+#include <thrust/sort.h>
 
 
 std::vector<int>& scan(std::vector<int> h_input) {
@@ -36,6 +37,13 @@ std::vector<Data>& gather(std::vector<Data> h_input, std::vector<int> h_indexes)
 	std::vector<Data>& h_result = *new std::vector<Data>(h_input.size());
 	thrust::copy(d_result.begin(), d_result.end(), h_result.begin());
 	return h_result;
+}
+
+// Can be used as split/partition operator by making the keys partition numbers
+template<typename Data>
+std::vector<Data>& sort_by_key(std::vector<Data>& h_input, std::vector<int>& h_keys) {
+	thrust::stable_sort_by_key(h_keys.begin(), h_keys.end(), h_input.begin());
+	return h_input;
 }
 
 template<typename Left, typename Right>
