@@ -4,77 +4,8 @@
 #include <thrust/scan.h>
 #include <thrust/device_vector.h>
 #include <thrust/scatter.h>
+#include <thrust/gather.h>
 
-#pragma region Scatter and gather
-template<typename Input, typename Output>
-//TODO: Implement specific scatter operation
-__device__ Output scatterInput(Input d_input) {
-	return d_input;
-};
-
-template<typename Input, typename Output>
-__global__ void scatterKernel(Input *d_input, Output *d_output, ptrdiff_t *d_indexes, size_t d_totalCount) {
-	size_t d_threadIndex = threadIdx.x + blockDim.x * blockIdx.x;
-
-	if (d_threadIndex < d_totalCount) {
-		d_output[d_indexes[d_threadIndex]] = scatterInput<Input, Output>(d_input[d_threadIndex]);
-	}
-};
-
-template<typename Input, typename Output>
-//TODO: Implement specific gather operation
-__device__ Output gatherInput(Input d_input) {
-	return d_input;
-};
-
-template<typename Input, typename Output>
-__global__ void gatherKernel(Input *d_input, Output *d_output, ptrdiff_t *d_indexes, size_t d_totalCount) {
-	size_t d_threadIndex = threadIdx.x + blockDim.x * blockIdx.x;
-
-	if (d_threadIndex < d_totalCount) {
-		d_output[d_threadIndex] = gatherInput<Input, Output>(d_input[d_indexes[d_threadIndex]]);
-	}
-};
-
-template<typename Input, typename Output>
-std::vector<Output>& scatter_gather(std::vector<Input> h_input, std::vector<ptrdiff_t> h_indexes, bool scatter) {
-	if (h_indexes.size() != h_input.size()) {
-		throw "Wrong number of indexes provided";
-	}
-
-	size_t h_itemCount = h_input.size();
-	Input *d_input;
-	Output *d_result;
-	ptrdiff_t *d_indexes;
-
-	handleCudaError(cudaSetDevice(0));
-	handleCudaError(cudaMalloc((void**)&d_input, h_itemCount * sizeof(Input)));
-	handleCudaError(cudaMemcpy(d_input, &h_input[0], h_itemCount * sizeof(Input), cudaMemcpyHostToDevice));
-	handleCudaError(cudaMalloc((void**)&d_indexes, h_itemCount * sizeof(ptrdiff_t)));
-	handleCudaError(cudaMemcpy(d_indexes, &h_indexes[0], h_itemCount * sizeof(ptrdiff_t), cudaMemcpyHostToDevice));
-	handleCudaError(cudaMalloc((void**)&d_result, h_itemCount * sizeof(Output)));
-
-	const int h_threadsPerBlock = 1024;
-	int h_blocks = (int)ceil((float)h_itemCount / h_threadsPerBlock);
-	if (scatter) {
-		scatterKernel<Input, Output> <<<h_blocks, h_threadsPerBlock>>>(d_input, d_result, d_indexes, h_itemCount);
-	}
-	else {
-		gatherKernel<Input, Output> <<<h_blocks, h_threadsPerBlock>>>(d_input, d_result, d_indexes, h_itemCount);
-	}
-
-	std::vector<Output>& h_result = *new std::vector<Output>();
-	h_result.resize(h_itemCount);
-
-	handleCudaError(cudaDeviceSynchronize());
-
-	handleCudaError(cudaMemcpy(&h_result[0], d_result, h_itemCount * sizeof(Output), cudaMemcpyDeviceToHost));
-
-	cudaDeviceReset();
-
-	return h_result;
-};
-#pragma endregion
 
 std::vector<int>& scan(std::vector<int> h_input) {
 	std::vector<int>& h_result = *new std::vector<int>();
@@ -89,6 +20,18 @@ std::vector<Data>& scatter(std::vector<Data> h_input, std::vector<int> h_indexes
 	thrust::device_vector<int> d_indexes = h_indexes;
 	thrust::device_vector<Data> d_result(h_input.size());
 	thrust::scatter(d_input.begin(), d_input.end(), d_indexes.begin(), d_result.begin());
+
+	std::vector<Data>& h_result = *new std::vector<Data>(h_input.size());
+	thrust::copy(d_result.begin(), d_result.end(), h_result.begin());
+	return h_result;
+}
+
+template<typename Data>
+std::vector<Data>& gather(std::vector<Data> h_input, std::vector<int> h_indexes) {
+	thrust::device_vector<Data> d_input = h_input;
+	thrust::device_vector<int> d_indexes = h_indexes;
+	thrust::device_vector<Data> d_result(h_input.size());
+	thrust::gather(d_input.begin(), d_input.end(), d_indexes.begin(), d_result.begin());
 
 	std::vector<Data>& h_result = *new std::vector<Data>(h_input.size());
 	thrust::copy(d_result.begin(), d_result.end(), h_result.begin());
