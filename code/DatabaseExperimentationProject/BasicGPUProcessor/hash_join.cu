@@ -63,6 +63,8 @@ struct order_key_selector : public thrust::unary_function<Input, int>
 
 template<typename Left, typename Right>
 std::vector<std::tuple<Left, Right>>& hash_join(std::vector<Left>& h_leftItems, std::vector<Right>& h_rightItems) {
+	std::clock_t h_start = std::clock();
+
 	// Copy host data to the device
 	thrust::device_vector<Left> d_leftItems(h_leftItems);
 	thrust::device_vector<Right> d_rightItems(h_rightItems);
@@ -71,15 +73,24 @@ std::vector<std::tuple<Left, Right>>& hash_join(std::vector<Left>& h_leftItems, 
 	thrust::device_vector<int> d_leftKeys(h_leftItems.size());
 	thrust::device_vector<int> d_rightKeys(h_rightItems.size());
 
+	std::cout << "Copying input and allocating space took " << GetElapsedTime(h_start) << "ms\n";
+	h_start = std::clock();
+
 	// Create device vectors containing the keys for the join operation
 	order_key_selector<Left> leftOperator;
 	order_key_selector<Right> rightOperator;
 	thrust::transform(d_leftItems.begin(), d_leftItems.end(), d_leftKeys.begin(), leftOperator);
 	thrust::transform(d_rightItems.begin(), d_rightItems.end(), d_rightKeys.begin(), rightOperator);
 
+	std::cout << "Selecting join keys took " << GetElapsedTime(h_start) << "ms\n";
+	h_start = std::clock();
+
 	// Sort the data using the keys (used for partitioning the data)
 	thrust::sort_by_key(d_leftKeys.begin(), d_leftKeys.end(), d_leftItems.begin());
 	thrust::sort_by_key(d_rightKeys.begin(), d_rightKeys.end(), d_rightItems.begin());
+
+	std::cout << "Sorting data took " << GetElapsedTime(h_start) << "ms\n";
+	h_start = std::clock();
 
 	// Allocate space for the parition keys and sizes
 	thrust::device_vector<int> d_leftCountKeys(h_leftItems.size());
@@ -87,17 +98,33 @@ std::vector<std::tuple<Left, Right>>& hash_join(std::vector<Left>& h_leftItems, 
 	thrust::device_vector<int> d_leftCounts(h_leftItems.size());
 	thrust::device_vector<int> d_rightCounts(h_rightItems.size());
 
-	// Calculate the parition keys and sizes
+	std::cout << "Allocating space for partition keys and values took " << GetElapsedTime(h_start) << "ms\n";
+	h_start = std::clock();
+
+	// Calculate the partition keys and sizes
 	auto h_newLeftEnd = thrust::reduce_by_key(d_leftKeys.begin(), d_leftKeys.end(), 
 		thrust::make_constant_iterator(1), d_leftCountKeys.begin(), d_leftCounts.begin());
 	auto h_newRightEnd = thrust::reduce_by_key(d_rightKeys.begin(), d_rightKeys.end(), 
 		thrust::make_constant_iterator(1), d_rightCountKeys.begin(), d_rightCounts.begin());
 
+	std::cout << "Calculating partition keys and sizes took " << GetElapsedTime(h_start) << "ms\n";
+	h_start = std::clock();
+
+	int leftCount = h_newLeftEnd.first - d_leftCountKeys.begin();
+	int rightCount = h_newRightEnd.first - d_rightCountKeys.begin();
+
 	// Copy the partition keys and sizes to the host
-	std::vector<int> h_leftCountKeys(d_leftCountKeys.begin(), d_leftCountKeys.end());
-	std::vector<int> h_rightCountKeys(d_rightCountKeys.begin(), d_rightCountKeys.end());
-	std::vector<int> h_leftCounts(d_leftCounts.begin(), d_leftCounts.end());
-	std::vector<int> h_rightCounts(d_rightCounts.begin(), d_rightCounts.end());
+	std::vector<int> h_leftCountKeys(leftCount);
+	thrust::copy(d_leftCountKeys.begin(), h_newLeftEnd.first, h_leftCountKeys.begin());
+	std::vector<int> h_rightCountKeys(rightCount);
+	thrust::copy(d_rightCountKeys.begin(), h_newRightEnd.first, h_rightCountKeys.begin());
+	std::vector<int> h_leftCounts(leftCount);
+	thrust::copy(d_leftCounts.begin(), d_leftCounts.begin() + leftCount, h_leftCounts.begin());
+	std::vector<int> h_rightCounts(rightCount);
+	thrust::copy(d_rightCounts.begin(), d_rightCounts.begin() + rightCount, h_rightCounts.begin());
+
+	std::cout << "Copying partition keys and sizes to host took " << GetElapsedTime(h_start) << "ms\n";
+	h_start = std::clock();
 
 	return *new std::vector<std::tuple<Left, Right>>();
 }
