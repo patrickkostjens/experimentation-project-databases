@@ -113,6 +113,7 @@ std::vector<std::tuple<Left, Right>>& hash_join(std::vector<Left>& h_leftItems, 
 	int leftCount = h_newLeftEnd.first - d_leftCountKeys.begin();
 	int rightCount = h_newRightEnd.first - d_rightCountKeys.begin();
 
+	//TODO: Move next blocks to GPU code
 	// Copy the partition keys and sizes to the host
 	std::vector<int> h_leftCountKeys(leftCount);
 	thrust::copy(d_leftCountKeys.begin(), h_newLeftEnd.first, h_leftCountKeys.begin());
@@ -124,6 +125,28 @@ std::vector<std::tuple<Left, Right>>& hash_join(std::vector<Left>& h_leftItems, 
 	thrust::copy(d_rightCounts.begin(), d_rightCounts.begin() + rightCount, h_rightCounts.begin());
 
 	std::cout << "Copying partition keys and sizes to host took " << GetElapsedTime(h_start) << "ms\n";
+	h_start = std::clock();
+
+	// Calculate the start indexes for each partition
+	int h_leftIndex = 0, h_rightIndex = 0;
+	std::vector<thrust::tuple<int, int>> h_startIndexes;
+	while (h_leftIndex < h_leftCountKeys.size() && h_rightIndex < h_rightCountKeys.size()) {
+		if (h_leftCountKeys[h_leftIndex] < h_rightCountKeys[h_rightIndex]) {
+			h_leftIndex++;
+		}
+		if (h_leftCountKeys[h_leftIndex] > h_rightCountKeys[h_rightIndex]) {
+			h_rightIndex++;
+		}
+		int offset = 0;
+		if (h_startIndexes.size() > 0) {
+			offset += thrust::get<1>(h_startIndexes[h_startIndexes.size() - 1]);
+		}
+		h_startIndexes.push_back(thrust::make_tuple(h_leftCountKeys[h_leftIndex], offset + h_leftCounts[h_leftIndex] * h_rightCounts[h_rightIndex]));
+		h_leftIndex++;
+		h_rightIndex++;
+	}
+	thrust::device_vector<thrust::tuple<int, int>> d_startIndexes(h_startIndexes);
+	std::cout << "Calculating partition start indexes took " << GetElapsedTime(h_start) << "ms\n";
 	h_start = std::clock();
 
 	return *new std::vector<std::tuple<Left, Right>>();
