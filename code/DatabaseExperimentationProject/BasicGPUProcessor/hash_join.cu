@@ -51,6 +51,16 @@ std::vector<Data>& sort_by_key(std::vector<Data>& h_input, std::vector<int>& h_k
 	return h_input;
 }
 
+template<typename Input>
+struct order_key_selector : public thrust::unary_function<Input, int>
+{
+	__host__ __device__
+		int operator()(const Input& input) const
+	{
+		return input.order_key;
+	}
+};
+
 template<typename Left, typename Right>
 std::vector<std::tuple<Left, Right>>& hash_join(std::vector<Left>& h_leftItems, std::vector<Right>& h_rightItems) {
 	// Copy host data to the device
