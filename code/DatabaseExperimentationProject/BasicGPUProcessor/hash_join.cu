@@ -144,26 +144,26 @@ std::vector<std::tuple<Left, Right>>& hash_join(std::vector<Left>& h_leftItems, 
 	// Based on http://stackoverflow.com/a/34371396/2041231
 	thrust::device_vector<int> d_mergedKeys(h_leftCount + h_rightCount);
 	thrust::device_vector<int> d_mergedValues(h_leftCount + h_rightCount);
+	thrust::device_vector<int> d_startIndexes(h_leftCount + h_rightCount - 1);
+
 	// Create list with keys and values for both the left and right side
 	thrust::merge_by_key(d_leftCountKeys.begin(), d_leftCountKeys.begin() + h_leftCount,
 		d_rightCountKeys.begin(), d_rightCountKeys.begin() + h_rightCount,
 		d_leftCounts.begin(), d_rightCounts.begin(), d_mergedKeys.begin(), d_mergedValues.begin());
 
-	thrust::device_vector<int> d_resultIndexes(h_leftCount + h_rightCount - 1);
-
 	// Compute multiplications of each pair of elements for which the key matches (=partition sizes)
 	thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.begin(), d_mergedValues.begin())),
 		thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.end() - 1, d_mergedValues.end() - 1)),
 		thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.begin() + 1, d_mergedValues.begin() + 1)),
-		d_resultIndexes.begin(), mark_multiply_func());
+		d_startIndexes.begin(), mark_multiply_func());
 
 	// Remove elements for which the key does not match
-	size_t rsize2 = thrust::remove_if(thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.begin(), d_resultIndexes.begin())),
-		thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.end() - 1, d_resultIndexes.end())), mark_test_func()) -
-		thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.begin(), d_resultIndexes.begin()));
+	size_t h_resultSize = thrust::remove_if(thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.begin(), d_startIndexes.begin())),
+		thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.end() - 1, d_startIndexes.end())), mark_test_func()) -
+		thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.begin(), d_startIndexes.begin()));
 
 	// Compute the prefix sum to get the start indexes from the partition sizes
-	thrust::exclusive_scan(d_resultIndexes.begin(), d_resultIndexes.begin() + rsize2, d_resultIndexes.begin());
+	thrust::exclusive_scan(d_startIndexes.begin(), d_startIndexes.begin() + h_resultSize, d_startIndexes.begin());
 
 	std::cout << "Calculating partition start indexes took " << GetElapsedTime(h_start) << "ms\n";
 
