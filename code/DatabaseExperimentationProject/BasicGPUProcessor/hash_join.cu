@@ -10,8 +10,12 @@
 #include <thrust/functional.h>
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/execution_policy.h>
+#include <thrust/iterator/zip_iterator.h>
+#include <thrust/transform.h>
 #include <algorithm>
 
+
+#define MARK_VAL -1
 
 std::vector<int>& scan(std::vector<int> h_input) {
 	std::vector<int>& h_result = *new std::vector<int>();
@@ -58,6 +62,29 @@ struct order_key_selector : public thrust::unary_function<Input, int>
 		int operator()(const Input& input) const
 	{
 		return input.order_key;
+	}
+};
+
+struct mark_multiply_func
+{
+	template <typename T1, typename T2>
+	__host__ __device__
+		int operator()(T1 &z1, T2 &z2){
+		int res = MARK_VAL;
+		if (thrust::get<0>(z1) == thrust::get<0>(z2)){
+			res = thrust::get<1>(z1) * thrust::get<1>(z2);
+		}
+		return res;
+	}
+};
+
+struct mark_test_func
+{
+	template <typename T>
+	__host__ __device__
+		bool operator()(T t){
+		if (thrust::get<1>(t) == MARK_VAL) return true;
+		return false;
 	}
 };
 
@@ -110,44 +137,35 @@ std::vector<std::tuple<Left, Right>>& hash_join(std::vector<Left>& h_leftItems, 
 	std::cout << "Calculating partition keys and sizes took " << GetElapsedTime(h_start) << "ms\n";
 	h_start = std::clock();
 
-	int leftCount = h_newLeftEnd.first - d_leftCountKeys.begin();
-	int rightCount = h_newRightEnd.first - d_rightCountKeys.begin();
+	int h_leftCount = h_newLeftEnd.first - d_leftCountKeys.begin();
+	int h_rightCount = h_newRightEnd.first - d_rightCountKeys.begin();
 
-	//TODO: Move next blocks to GPU code
-	// Copy the partition keys and sizes to the host
-	std::vector<int> h_leftCountKeys(leftCount);
-	thrust::copy(d_leftCountKeys.begin(), h_newLeftEnd.first, h_leftCountKeys.begin());
-	std::vector<int> h_rightCountKeys(rightCount);
-	thrust::copy(d_rightCountKeys.begin(), h_newRightEnd.first, h_rightCountKeys.begin());
-	std::vector<int> h_leftCounts(leftCount);
-	thrust::copy(d_leftCounts.begin(), d_leftCounts.begin() + leftCount, h_leftCounts.begin());
-	std::vector<int> h_rightCounts(rightCount);
-	thrust::copy(d_rightCounts.begin(), d_rightCounts.begin() + rightCount, h_rightCounts.begin());
+	// Calculate partition start indexes
+	// Based on http://stackoverflow.com/a/34371396/2041231
+	thrust::device_vector<int> d_mergedKeys(h_leftCount + h_rightCount);
+	thrust::device_vector<int> d_mergedValues(h_leftCount + h_rightCount);
+	// Create list with keys and values for both the left and right side
+	thrust::merge_by_key(d_leftCountKeys.begin(), d_leftCountKeys.begin() + h_leftCount,
+		d_rightCountKeys.begin(), d_rightCountKeys.begin() + h_rightCount,
+		d_leftCounts.begin(), d_rightCounts.begin(), d_mergedKeys.begin(), d_mergedValues.begin());
 
-	std::cout << "Copying partition keys and sizes to host took " << GetElapsedTime(h_start) << "ms\n";
-	h_start = std::clock();
+	thrust::device_vector<int> d_resultIndexes(h_leftCount + h_rightCount - 1);
 
-	// Calculate the start indexes for each partition
-	int h_leftIndex = 0, h_rightIndex = 0;
-	std::vector<thrust::tuple<int, int>> h_startIndexes;
-	while (h_leftIndex < h_leftCountKeys.size() && h_rightIndex < h_rightCountKeys.size()) {
-		if (h_leftCountKeys[h_leftIndex] < h_rightCountKeys[h_rightIndex]) {
-			h_leftIndex++;
-		}
-		if (h_leftCountKeys[h_leftIndex] > h_rightCountKeys[h_rightIndex]) {
-			h_rightIndex++;
-		}
-		int offset = 0;
-		if (h_startIndexes.size() > 0) {
-			offset += thrust::get<1>(h_startIndexes[h_startIndexes.size() - 1]);
-		}
-		h_startIndexes.push_back(thrust::make_tuple(h_leftCountKeys[h_leftIndex], offset + h_leftCounts[h_leftIndex] * h_rightCounts[h_rightIndex]));
-		h_leftIndex++;
-		h_rightIndex++;
-	}
-	thrust::device_vector<thrust::tuple<int, int>> d_startIndexes(h_startIndexes);
+	// Compute multiplications of each pair of elements for which the key matches (=partition sizes)
+	thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.begin(), d_mergedValues.begin())),
+		thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.end() - 1, d_mergedValues.end() - 1)),
+		thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.begin() + 1, d_mergedValues.begin() + 1)),
+		d_resultIndexes.begin(), mark_multiply_func());
+
+	// Remove elements for which the key does not match
+	size_t rsize2 = thrust::remove_if(thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.begin(), d_resultIndexes.begin())),
+		thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.end() - 1, d_resultIndexes.end())), mark_test_func()) -
+		thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.begin(), d_resultIndexes.begin()));
+
+	// Compute the prefix sum to get the start indexes from the partition sizes
+	thrust::exclusive_scan(d_resultIndexes.begin(), d_resultIndexes.begin() + rsize2, d_resultIndexes.begin());
+
 	std::cout << "Calculating partition start indexes took " << GetElapsedTime(h_start) << "ms\n";
-	h_start = std::clock();
 
 	return *new std::vector<std::tuple<Left, Right>>();
 }
