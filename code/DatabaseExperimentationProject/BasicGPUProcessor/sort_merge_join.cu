@@ -89,7 +89,7 @@ struct mark_test_func
 };
 
 template<typename Left, typename Right>
-std::vector<std::tuple<Left, Right>>& hash_join(std::vector<Left>& h_leftItems, std::vector<Right>& h_rightItems) {
+std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftItems, std::vector<Right>& h_rightItems) {
 	std::clock_t h_start = std::clock();
 
 	// Copy host data to the device
@@ -170,4 +170,4 @@ std::vector<std::tuple<Left, Right>>& hash_join(std::vector<Left>& h_leftItems, 
 	return *new std::vector<std::tuple<Left, Right>>();
 }
 
-template std::vector<std::tuple<Order, LineItem>>& hash_join<Order, LineItem>(std::vector<Order>& orders, std::vector<LineItem>& items);
+template std::vector<std::tuple<Order, LineItem>>& sort_merge_join<Order, LineItem>(std::vector<Order>& orders, std::vector<LineItem>& items);

@@ -33,10 +33,10 @@
     <ClInclude Include="async_gpu_filter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gpu_hash_join.h">
+    <ClInclude Include="cuda_helpers.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cuda_helpers.cuh">
+    <ClInclude Include="gpu_sort_merge_join.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,7 +53,7 @@
     <ClCompile Include="async_gpu_filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gpu_hash_join.cpp">
+    <ClCompile Include="gpu_sort_merge_join.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -61,10 +61,10 @@
     <CudaCompile Include="filter.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="hash_join.cu">
+    <CudaCompile Include="cuda_helpers.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="cuda_helpers.cu">
+    <CudaCompile Include="sort_merge_join.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
   </ItemGroup>

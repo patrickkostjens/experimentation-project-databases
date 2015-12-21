@@ -4,7 +4,7 @@
 #include "../BasicGPUProcessor/basic_gpu_filter.h"
 #include "../BasicGPUProcessor/unified_memory_gpu_filter.h"
 #include "../BasicGPUProcessor/async_gpu_filter.h"
-#include "../BasicGPUProcessor/gpu_hash_join.h"
+#include "../BasicGPUProcessor/gpu_sort_merge_join.h"
 #include "helpers.h"
 #include <tuple>
 
@@ -38,10 +38,10 @@ void RunGPUFilter(std::vector<Order>& orders) {
 	RunGenericFilter("async GPU processor", "orders", orders, gpu_filter_async<Order>);
 }
 
-void GPUHashJoin(std::vector<LineItem>& items, std::vector<Order>& orders) {
-	std::cout << "Running GPU Hash Join\n";
+void GPUSortMergeJoin(std::vector<LineItem>& items, std::vector<Order>& orders) {
+	std::cout << "Running GPU Sort-Merge Join\n";
 	std::clock_t start = std::clock();
-	std::vector<std::tuple<Order, LineItem>>& results = gpu_hash_join<Order, LineItem>(orders, items);
+	std::vector<std::tuple<Order, LineItem>>& results = gpu_sort_merge_join<Order, LineItem>(orders, items);
 
 	double duration = GetElapsedTime(start);
 	std::cout << "GPU result count: " << results.size() << "\n";
@@ -49,6 +49,6 @@ void GPUHashJoin(std::vector<LineItem>& items, std::vector<Order>& orders) {
 
 }
 
-void RunGPUHashJoin(std::vector<LineItem>& items, std::vector<Order>& orders) {
-	GPUHashJoin(items, orders);
+void RunGPUSortMergeJoin(std::vector<LineItem>& items, std::vector<Order>& orders) {
+	GPUSortMergeJoin(items, orders);
 }
