@@ -6,6 +6,7 @@
 #include "../BasicGPUProcessor/async_gpu_filter.h"
 #include "../BasicGPUProcessor/gpu_hash_join.h"
 #include "helpers.h"
+#include <tuple>
 
 template<typename Filter, typename Item>
 void RunGenericFilter(char* filterName, char* typeName, std::vector<Item>& orders, Filter& filterLambda) {
