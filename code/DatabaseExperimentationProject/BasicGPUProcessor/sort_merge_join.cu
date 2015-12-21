@@ -166,6 +166,14 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	thrust::exclusive_scan(d_startIndexes.begin(), d_startIndexes.begin() + h_resultSize, d_startIndexes.begin());
 
 	std::cout << "Calculating partition start indexes took " << GetElapsedTime(h_start) << "ms\n";
+	h_start = std::clock();
+
+	thrust::device_vector<int> d_leftStartIndexes(h_leftCount);
+	thrust::device_vector<int> d_rightStartIndexes(h_rightCount);
+	thrust::exclusive_scan(d_leftCounts.begin(), d_leftCounts.begin() + h_leftCount, d_leftStartIndexes.begin());
+	thrust::exclusive_scan(d_rightCounts.begin(), d_rightCounts.begin() + h_rightCount, d_rightStartIndexes.begin());
+
+	std::cout << "Calculating join block start indexes took " << GetElapsedTime(h_start) << "ms\n";
 
 	return *new std::vector<std::tuple<Left, Right>>();
 }
