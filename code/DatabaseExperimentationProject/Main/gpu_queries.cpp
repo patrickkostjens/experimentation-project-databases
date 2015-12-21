@@ -43,7 +43,7 @@ void GPUHashJoin(std::vector<LineItem>& items, std::vector<Order>& orders) {
 	std::vector<std::tuple<Order, LineItem>>& results = gpu_hash_join<Order, LineItem>(orders, items);
 
 	double duration = GetElapsedTime(start);
-	std::cout << "GPU result count: " << 0 << "\n";
+	std::cout << "GPU result count: " << results.size() << "\n";
 	std::cout << "GPU processing took " << duration << "ms\n";
 
 }
