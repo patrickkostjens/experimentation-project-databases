@@ -160,16 +160,19 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	std::cout << "Calculating join block start indexes took " << GetElapsedTime(h_start) << "ms\n";
 	h_start = std::clock();
 
+	unsigned int h_partitionCount = (unsigned int)d_startIndexes.size();
 	int h_joinResultSize = 0;
-	if (d_startIndexes.size() > 0) {
+	if (h_partitionCount > 0) {
 		h_joinResultSize = *(d_startIndexes.end() - 1) + *(d_leftCounts.end() - 1) * *(d_rightCounts.end() - 1) + 1;
 	}
 
 	thrust::device_vector<thrust::tuple<Left, Right>> d_joinResult(h_joinResultSize);
 
 	unsigned int h_blockSize = 256;
-	unsigned int h_numBlocks = ((unsigned int)d_startIndexes.size() + (h_blockSize - 1)) / h_blockSize;
+	unsigned int h_numBlocks = (h_partitionCount + (h_blockSize - 1)) / h_blockSize;
 
+	std::cout << "Join preparation took " << GetElapsedTime(h_start) << "ms\n";
+	h_start = std::clock();
 	join_partitions<<<h_numBlocks, h_blockSize>>>(thrust::raw_pointer_cast(d_leftItems.data()),
 		thrust::raw_pointer_cast(d_leftStartIndexes.data()),
 		thrust::raw_pointer_cast(d_leftCounts.data()),
@@ -177,7 +180,7 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 		thrust::raw_pointer_cast(d_rightStartIndexes.data()),
 		thrust::raw_pointer_cast(d_rightCounts.data()),
 		thrust::raw_pointer_cast(d_joinResult.data()),
-		d_startIndexes.size(),
+		h_partitionCount,
 		thrust::raw_pointer_cast(d_startIndexes.data()));
 	// cudaDeviceSynchronize waits for the kernel to finish, and returns any errors encountered during the launch.
 	handleCudaError(cudaDeviceSynchronize());
