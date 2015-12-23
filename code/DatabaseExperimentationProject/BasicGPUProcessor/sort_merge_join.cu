@@ -120,8 +120,8 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	std::cout << "Calculating partition keys and sizes took " << GetElapsedTime(h_start) << "ms\n";
 	h_start = std::clock();
 
-	int h_leftCount = h_newLeftEnd.first - d_leftCountKeys.begin();
-	int h_rightCount = h_newRightEnd.first - d_rightCountKeys.begin();
+	int64_t h_leftCount = h_newLeftEnd.first - d_leftCountKeys.begin();
+	int64_t h_rightCount = h_newRightEnd.first - d_rightCountKeys.begin();
 
 	// Calculate partition start indexes
 	// Based on http://stackoverflow.com/a/34371396/2041231
@@ -168,7 +168,7 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	thrust::device_vector<thrust::tuple<Left, Right>> d_joinResult(h_joinResultSize);
 
 	unsigned int h_blockSize = 256;
-	unsigned int h_numBlocks = (d_startIndexes.size() + (h_blockSize - 1)) / h_blockSize;
+	unsigned int h_numBlocks = ((unsigned int)d_startIndexes.size() + (h_blockSize - 1)) / h_blockSize;
 
 	cartesian_product <<<h_numBlocks, h_blockSize>>>(thrust::raw_pointer_cast(d_leftItems.data()),
 		thrust::raw_pointer_cast(d_leftStartIndexes.data()),
