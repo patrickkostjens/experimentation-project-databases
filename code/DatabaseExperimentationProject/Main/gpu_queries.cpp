@@ -45,10 +45,12 @@ void GPUSortMergeJoin(std::vector<LineItem>& items, std::vector<Order>& orders) 
 
 	double duration = GetElapsedTime(start);
 	std::cout << "GPU result count: " << results.size() << "\n";
-	std::cout << "GPU processing took " << duration << "ms\n";
+	std::cout << "GPU processing took " << duration << "ms\n\n";
 
+	delete &results;
 }
 
 void RunGPUSortMergeJoin(std::vector<LineItem>& items, std::vector<Order>& orders) {
+	GPUSortMergeJoin(items, orders);
 	GPUSortMergeJoin(items, orders);
 }

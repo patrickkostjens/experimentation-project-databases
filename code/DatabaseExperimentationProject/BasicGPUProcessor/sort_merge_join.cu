@@ -17,42 +17,25 @@
 
 #define MARK_VAL -1
 
-std::vector<int>& scan(std::vector<int> h_input) {
-	std::vector<int>& h_result = *new std::vector<int>();
-	h_result.resize(h_input.size());
-	thrust::inclusive_scan(h_input.begin(), h_input.end(), h_result.begin());
-	return h_result;
-}
+template<typename Left, typename Right>
+__global__ void cartesian_product(const Left *left, const int *leftStartIndexes, const int *leftPartitionSizes,
+	const Right *right, const int *rightStartIndexes, const int *rightPartitionSizes,
+	thrust::tuple<Left, Right> *result, size_t partitionCount, const int *resultStartIndexes)
+{
+	unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-template<typename Data>
-std::vector<Data>& scatter(std::vector<Data> h_input, std::vector<int> h_indexes) {
-	thrust::device_vector<Data> d_input = h_input;
-	thrust::device_vector<int> d_indexes = h_indexes;
-	thrust::device_vector<Data> d_result(h_input.size());
-	thrust::scatter(d_input.begin(), d_input.end(), d_indexes.begin(), d_result.begin());
-
-	std::vector<Data>& h_result = *new std::vector<Data>(h_input.size());
-	thrust::copy(d_result.begin(), d_result.end(), h_result.begin());
-	return h_result;
-}
-
-template<typename Data>
-std::vector<Data>& gather(std::vector<Data> h_input, std::vector<int> h_indexes) {
-	thrust::device_vector<Data> d_input = h_input;
-	thrust::device_vector<int> d_indexes = h_indexes;
-	thrust::device_vector<Data> d_result(h_input.size());
-	thrust::gather(d_input.begin(), d_input.end(), d_indexes.begin(), d_result.begin());
-
-	std::vector<Data>& h_result = *new std::vector<Data>(h_input.size());
-	thrust::copy(d_result.begin(), d_result.end(), h_result.begin());
-	return h_result;
-}
-
-// Can be used as split/partition operator by making the keys partition numbers
-template<typename Data>
-std::vector<Data>& sort_by_key(std::vector<Data>& h_input, std::vector<int>& h_keys) {
-	thrust::stable_sort_by_key(h_keys.begin(), h_keys.end(), h_input.begin());
-	return h_input;
+	if (idx < partitionCount)
+	{
+		int leftOffset = leftStartIndexes[idx];
+		int rightOffset = rightStartIndexes[idx];
+		int offset = resultStartIndexes[idx];
+		for (int leftIndex = 0; leftIndex < leftPartitionSizes[idx]; leftIndex++) {
+			for (int rightIndex = 0; rightIndex < rightPartitionSizes[idx]; rightIndex++) {
+				result[offset] = thrust::make_tuple(left[leftOffset + leftIndex], right[rightOffset + rightIndex]);
+				offset++;
+			}
+		}
+	}
 }
 
 template<typename Input>
@@ -158,12 +141,13 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 		d_startIndexes.begin(), mark_multiply_func());
 
 	// Remove elements for which the key does not match
-	size_t h_resultSize = thrust::remove_if(thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.begin(), d_startIndexes.begin())),
+	size_t h_filteredResultSize = thrust::remove_if(thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.begin(), d_startIndexes.begin())),
 		thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.end() - 1, d_startIndexes.end())), mark_test_func()) -
 		thrust::make_zip_iterator(thrust::make_tuple(d_mergedKeys.begin(), d_startIndexes.begin()));
+	d_startIndexes.resize(h_filteredResultSize);
 
 	// Compute the prefix sum to get the start indexes from the partition sizes
-	thrust::exclusive_scan(d_startIndexes.begin(), d_startIndexes.begin() + h_resultSize, d_startIndexes.begin());
+	thrust::exclusive_scan(d_startIndexes.begin(), d_startIndexes.begin() + h_filteredResultSize, d_startIndexes.begin());
 
 	std::cout << "Calculating partition start indexes took " << GetElapsedTime(h_start) << "ms\n";
 	h_start = std::clock();
@@ -174,8 +158,42 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	thrust::exclusive_scan(d_rightCounts.begin(), d_rightCounts.begin() + h_rightCount, d_rightStartIndexes.begin());
 
 	std::cout << "Calculating join block start indexes took " << GetElapsedTime(h_start) << "ms\n";
+	h_start = std::clock();
 
-	return *new std::vector<std::tuple<Left, Right>>();
+	int h_joinResultSize = 0;
+	if (d_startIndexes.size() > 0) {
+		h_joinResultSize = *(d_startIndexes.end() - 1) + *(d_leftCounts.end() - 1) * *(d_rightCounts.end() - 1) + 1;
+	}
+
+	thrust::device_vector<thrust::tuple<Left, Right>> d_joinResult(h_joinResultSize);
+
+	unsigned int h_blockSize = 256;
+	unsigned int h_numBlocks = (d_startIndexes.size() + (h_blockSize - 1)) / h_blockSize;
+
+	cartesian_product <<<h_numBlocks, h_blockSize>>>(thrust::raw_pointer_cast(d_leftItems.data()),
+		thrust::raw_pointer_cast(d_leftStartIndexes.data()),
+		thrust::raw_pointer_cast(d_leftCounts.data()),
+		thrust::raw_pointer_cast(d_rightItems.data()),
+		thrust::raw_pointer_cast(d_rightStartIndexes.data()),
+		thrust::raw_pointer_cast(d_rightCounts.data()),
+		thrust::raw_pointer_cast(d_joinResult.data()),
+		d_startIndexes.size(),
+		thrust::raw_pointer_cast(d_startIndexes.data()));
+	// cudaDeviceSynchronize waits for the kernel to finish, and returns any errors encountered during the launch.
+	handleCudaError(cudaDeviceSynchronize());
+
+	std::cout << "Calculating join result took " << GetElapsedTime(h_start) << "ms\n";
+	h_start = std::clock();
+
+	thrust::host_vector<thrust::tuple<Left, Right>> h_thrustResult = d_joinResult;
+	std::vector<std::tuple<Left, Right>> &h_result = *new std::vector<std::tuple<Left, Right>>(h_thrustResult.size());
+
+	for (size_t i = 0; i < h_thrustResult.size(); i++) {
+		h_result[i] = std::make_tuple(thrust::get<0>(h_thrustResult[i]), thrust::get<1>(h_thrustResult[i]));
+	}
+	std::cout << "Copying results to host took " << GetElapsedTime(h_start) << "ms\n";
+
+	return h_result;
 }
 
 template std::vector<std::tuple<Order, LineItem>>& sort_merge_join<Order, LineItem>(std::vector<Order>& orders, std::vector<LineItem>& items);
