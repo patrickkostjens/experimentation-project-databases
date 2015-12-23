@@ -18,7 +18,7 @@
 #define MARK_VAL -1
 
 template<typename Left, typename Right>
-__global__ void cartesian_product(const Left *left, const int *leftStartIndexes, const int *leftPartitionSizes,
+__global__ void join_partitions(const Left *left, const int *leftStartIndexes, const int *leftPartitionSizes,
 	const Right *right, const int *rightStartIndexes, const int *rightPartitionSizes,
 	thrust::tuple<Left, Right> *result, size_t partitionCount, const int *resultStartIndexes)
 {
@@ -170,7 +170,7 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	unsigned int h_blockSize = 256;
 	unsigned int h_numBlocks = ((unsigned int)d_startIndexes.size() + (h_blockSize - 1)) / h_blockSize;
 
-	cartesian_product <<<h_numBlocks, h_blockSize>>>(thrust::raw_pointer_cast(d_leftItems.data()),
+	join_partitions<<<h_numBlocks, h_blockSize>>>(thrust::raw_pointer_cast(d_leftItems.data()),
 		thrust::raw_pointer_cast(d_leftStartIndexes.data()),
 		thrust::raw_pointer_cast(d_leftCounts.data()),
 		thrust::raw_pointer_cast(d_rightItems.data()),
