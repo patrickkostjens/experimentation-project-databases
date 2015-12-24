@@ -85,6 +85,7 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 
 	std::cout << "Copying input and allocating space took " << GetElapsedTime(h_start) << "ms\n";
 	h_start = std::clock();
+	std::clock_t h_totalStart = std::clock();
 
 	// Create device vectors containing the keys for the join operation
 	order_key_selector<Left> leftOperator;
@@ -186,6 +187,7 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	handleCudaError(cudaDeviceSynchronize());
 
 	std::cout << "Calculating join result took " << GetElapsedTime(h_start) << "ms\n";
+	std::cout << "Total join calculations took " << GetElapsedTime(h_totalStart) << "ms\n";
 	h_start = std::clock();
 
 	thrust::host_vector<thrust::tuple<Left, Right>> h_thrustResult = d_joinResult;
