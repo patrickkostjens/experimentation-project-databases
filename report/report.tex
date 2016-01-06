@@ -31,8 +31,28 @@
 \end{abstract}
 
 \section{Introduction}
+Over the past years or even decades a lot of work has been done on database query processing. Most of this work has focused on query processing using CPU's. In this work, algorithms are developed for a single or a few fast cores. %TODO citations
 
+Another processor that is present in a computer is the Graphics Processing Unit (GPU). A GPU has a very different architecture. It has a lot of cores (hundreds or even thousands), but each core is a lot slower than a single CPU core. Originally, GPUs were mostly used for, for example, games or the rendering of images or videos, but in 2002 Thompson et al \cite{thompson2002} published a paper on using GPUs for general purpose computing.
 
+From that point forward, a lot of work has been done on database query processing using GPUs as well. We will discuss this work in some more detail in section \ref{sec:related-work}. Some impressive results are in this previous work. However, a lot still has to be done as well. First of all, most of the previous work focuses on a specific aspect of query processing, like joining or filtering. While results in such a specific aspect are definitely useful, those results need to be combined in a single implementation to see how a GPU would perform when processing an actual query instead of only a part of it.
+
+An extra challenge in this area is the fact that the comparison between CPU query processing and GPU query processing may have different results in different years because CPUs and GPUs may be developed at different speeds. This means that initially it may be more efficient to perform a certain operation on a CPU because the GPU version of the algorithm is slower, while a couple of years later this might be the other way around when using the same algorithms.
+
+Last year I also created a general overview of the possibilities. However, in this experimental analysis of the current state of database query processing on GPUs, I will try to implement and combine some query operators on GPUs and CPUs to compare them to each other. This way, I hope to find how useful GPUs currently are compared to CPUs for database query processing. I will also try to make a comparison with the results found in the original work and I will try to combine the operations to find how useful the GPU is for processing more complete queries instead of only parts of them. This work will therefore be more detailed than my overview from last year and it will contain recent results for the discussed algorithms.
+
+I will first discuss some related work in section \ref{sec:related-work}. Some of this work is also used to implement the GPU operations. Next, we will look at an overview of the current possibilities and some choices that were made in section \ref{sec:overview}. %TODO other sections
+
+\section{Related work}
+\label{sec:related-work}
+Since the paper by Thompson et al. in 2002 on general purpose computing using GPUs \cite{thompson2002}, a lot of research has been done on the topic of general purpose GPU's. One of the more specific topics in this area is that of database query processing using GPUs. Quite some research has been done in this area as well \cite{bakkum2010}, \cite{fang2007}, \cite{kaldeway2010}. 
+
+So far, a lot of papers have focused on specific aspects of query processing. For example, He et al. \cite{he2008} and Kaldeway et al. \cite{kaldeway2010} researched joins, while, for example, Bakkum et al. \cite{bakkum2010} and Govinderaju et al. \cite{govindaraju2004} looked at algebraic selection (filtering).  Fang et al. \cite{fang2007} even did some work on combining the processing power of CPUs and GPUs.
+
+Although quite a bit of work has been done on query processing using GPUs, a lot more research has been done on query processing using CPUs. This work also started a lot earlier. For example, in 1984, Bratbergsengen published a paper on the implementation of several relational algebra operations \cite{bratbergsengen1984}. These algebra operations are fundamental parts of database query processing.
+
+\section{Overview}
+\label{sec:overview}
 
 \bibliography{references}{}
 \bibliographystyle{acm}
