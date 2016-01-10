@@ -63,7 +63,11 @@ Some differences between CPUs and GPUs exist that are very important for the dev
 
 Another important difference is related to the parallelism. While atomic operations for GPUs do exist, using them can significantly slow down your algorithm. If, for example, every core needs to get a memory address to write its results to, you could get an address and increase it atomically on a CPU. However, on a GPU, when hundreds or even thousands of cores are doing these atomic operations on the same memory address, this can cause significant waiting times, thereby slowing down the algorithm. This means alternative solutions for this problem, which we will discuss later, will have to be developed.
 
+A third important difference that can influence GPU algorithms is the fact that a GPU has its own memory. It cannot use the memory of its host directly. This means that all the data that the GPU requires needs to be transferred to the GPU before it can be used. Different strategies to do this exist. We will discuss them in more detail in section \ref{sec:gpu-implementation}.
+
 These two differences are the most important for the design of algorithms for GPUs. A more extensive overview of the differences between CPUs and GPUs can be found in my overview from last year \cite{kostjens2015}.
+
+%TODO explain CUDA's thread/block structure
 
 \section{Implementation}
 \label{sec:implementation}
