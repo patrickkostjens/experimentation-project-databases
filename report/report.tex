@@ -14,11 +14,13 @@
 	\vspace{1.5cm}
 	{\huge\bfseries Experimental Analysis Of The Current State Of GPUs For Database Query Processing\par}
 	\vspace{2cm}
-	{\Large\itshape Patrick Kostjens\par}
+	
+	{\Large\itshape Patrick Kostjens \par}
+	\href{mailto:p.a.r.kostjens@students.uu.nl}{p.a.r.kostjens@students.uu.nl}
 	\vfill
+	
 	supervised by\par
 	Drs.~Hans Philippi
-
 	\vfill
 
 % Bottom of the page
@@ -39,7 +41,7 @@ From that point forward, a lot of work has been done on database query processin
 
 An extra challenge in this area is the fact that the comparison between CPU query processing and GPU query processing may have different results in different years because CPUs and GPUs may be developed at different speeds. This means that initially it may be more efficient to perform a certain operation on a CPU because the GPU version of the algorithm is slower, while a couple of years later this might be the other way around when using the same algorithms.
 
-Last year I also created a general overview of the possibilities. However, in this experimental analysis of the current state of database query processing on GPUs, I will try to implement and combine some query operators on GPUs and CPUs to compare them to each other. This way, I hope to find how useful GPUs currently are compared to CPUs for database query processing. I will also try to make a comparison with the results found in the original work and I will try to combine the operations to find how useful the GPU is for processing more complete queries instead of only parts of them. This work will therefore be more detailed than my overview from last year and it will contain recent results for the discussed algorithms.
+Last year I also created a general overview of the possibilities \cite{kostjens2015}. However, in this experimental analysis of the current state of database query processing on GPUs, I will try to implement and combine some query operators on GPUs and CPUs to compare them to each other. This way, I hope to find how useful GPUs currently are compared to CPUs for database query processing. I will also try to make a comparison with the results found in the original work and I will try to combine the operations to find how useful the GPU is for processing more complete queries instead of only parts of them. This work will therefore be more detailed than my overview from last year and it will contain recent results for the discussed algorithms.
 
 I will first discuss some related work in section \ref{sec:related-work}. Some of this work is also used to implement the GPU operations. Next, we will look at an overview of the current possibilities and some choices that were made in section \ref{sec:overview}. %TODO other sections
 
@@ -60,6 +62,8 @@ As the development environment, Visual Studio 2013 is used to work with CUDA \ci
 Some differences between CPUs and GPUs exist that are very important for the development of query processing algorithms for GPUs. First of all, as mentioned already, GPUs have a lot of relatively slow cores, while CPUs have a few fast cores. This makes the nature of the algorithms for both very different since GPUs can only work with highly parallel algorithms.
 
 Another important difference is related to the parallelism. While atomic operations for GPUs do exist, using them can significantly slow down your algorithm. If, for example, every core needs to get a memory address to write its results to, you could get an address and increase it atomically on a CPU. However, on a GPU, when hundreds or even thousands of cores are doing these atomic operations on the same memory address, this can cause significant waiting times, thereby slowing down the algorithm. This means alternative solutions for this problem, which we will discuss later, will have to be developed.
+
+These two differences are the most important for the design of algorithms for GPUs. A more extensive overview of the differences between CPUs and GPUs can be found in my overview from last year \cite{kostjens2015}.
 
 \bibliography{references}{}
 \bibliographystyle{acm}
