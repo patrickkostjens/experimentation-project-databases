@@ -43,7 +43,7 @@ An extra challenge in this area is the fact that the comparison between CPU quer
 
 Last year I also created a general overview of the possibilities \cite{kostjens2015}. However, in this experimental analysis of the current state of database query processing on GPUs, I will try to implement and combine some query operators on GPUs and CPUs to compare them to each other. This way, I hope to find how useful GPUs currently are compared to CPUs for database query processing. I will also try to make a comparison with the results found in the original work and I will try to combine the operations to find how useful the GPU is for processing more complete queries instead of only parts of them. This work will therefore be more detailed than my overview from last year and it will contain recent results for the discussed algorithms.
 
-I will first discuss some related work in section \ref{sec:related-work}. Some of this work is also used to implement the GPU operations. Next, we will look at an overview of the current possibilities and some choices that were made in section \ref{sec:overview}. %TODO other sections
+I will first discuss some related work in section \ref{sec:related-work}. Some of this work is also used to implement the GPU operations. Next, we will look at an overview of the current possibilities and some choices that were made in section \ref{sec:overview}. After that, we will discuss the implemented algorithms in section \ref{sec:implementation}. We will then look at the results in section \ref{sec:results}. Next, we will have a discussion about the results and the general state of GPUs for query processing in section \ref{sec:discussion}. Finally, we will conclude with some final remarks and a small summary in section \ref{sec:conclusion}.
 
 \section{Related work}
 \label{sec:related-work}
@@ -64,6 +64,18 @@ Some differences between CPUs and GPUs exist that are very important for the dev
 Another important difference is related to the parallelism. While atomic operations for GPUs do exist, using them can significantly slow down your algorithm. If, for example, every core needs to get a memory address to write its results to, you could get an address and increase it atomically on a CPU. However, on a GPU, when hundreds or even thousands of cores are doing these atomic operations on the same memory address, this can cause significant waiting times, thereby slowing down the algorithm. This means alternative solutions for this problem, which we will discuss later, will have to be developed.
 
 These two differences are the most important for the design of algorithms for GPUs. A more extensive overview of the differences between CPUs and GPUs can be found in my overview from last year \cite{kostjens2015}.
+
+\section{Implementation}
+\label{sec:implementation}
+
+\section{Results}
+\label{sec:results}
+
+\section{Discussion}
+\label{sec:discussion}
+
+\section{Conclusion}
+\label{sec:conclusion}
 
 \bibliography{references}{}
 \bibliographystyle{acm}
