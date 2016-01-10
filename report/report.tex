@@ -67,6 +67,26 @@ These two differences are the most important for the design of algorithms for GP
 
 \section{Implementation}
 \label{sec:implementation}
+The original idea was to implement all the important algebraic operations for query processing and to combine them as well. However, it turned out to be too much work to do all of this. Eventually, I implemented non indexed and indexed filtering for CPUs, as well as hash join and sort-merge join. For GPUs, non indexed filtering was implemented using Unified Memory and both synchronously and asynchronously copying the results manually. Sort-merge join was also implemented for GPUs.
+
+Simple projection (meaning column filtering) could have been implemented relatively easy as well for GPUs, but since this would not include any real computations, I did not do that. However, if there would have been time to implement projections including aggregations, the results could have been interesting.
+
+\subsection{CPU}
+Since a performance comparison is needed to evaluate the results for the GPU processing, the same or similar operations were also implemented on a CPU. All CPU algorithms were implemented for a single core.
+
+\subsubsection{Non-indexed filtering}
+The most simple algorithm is the non-indexed filtering algorithm. This algorithm simply iterates over all the records and uses a given predicate to determine whether the record will be in the result or not.
+
+\subsubsection{Indexed filtering}
+A filtering algorithm that is a bit more complex is the indexed filtering algorithm. I implemented a B-tree to serve as the index \cite{comer1979}. First, the B-tree is built for a predetermined column or set of columns. Next, this tree is searched for elements with a certain value for the indexed columns. The result can consist of zero or more values.
+
+\subsubsection{Hash join}
+One of the CPU join algorithms I implemented is a simple hash join algorithm \cite{dewitt1985}. This algorithm works by creating two hash tables, each containing the records for one of the join relationships. The join key is used for hashing. The join result is computed by taking the cartesian product of every pair of partitions that has the same key.
+
+\subsubsection{Sort-merge join}
+The other CPU join algorithm that is implemented is the sort-merge join algorithm \cite{blasgen1977}. This algorithm works by first sorting both relationships. It then iterates through both of them and adds a record to the result for every matching pair of records that is encountered in the input relationships.
+
+\subsection{GPU}
 
 \section{Results}
 \label{sec:results}
