@@ -31,9 +31,9 @@
 \end{abstract}
 
 \section{Introduction}
-Over the past years or even decades a lot of work has been done on database query processing. Most of this work has focused on query processing using CPU's. In this work, algorithms are developed for a single or a few fast cores. %TODO citations
+Over the past years or even decades a lot of work has been done on database query processing. Most of this work has focused on query processing using CPUs. When developing algorithms for CPUs, algorithms are developed for a single or a few fast cores. %TODO citations
 
-Another processor that is present in a computer is the Graphics Processing Unit (GPU). A GPU has a very different architecture. It has a lot of cores (hundreds or even thousands), but each core is a lot slower than a single CPU core. Originally, GPUs were mostly used for, for example, games or the rendering of images or videos, but in 2002 Thompson et al \cite{thompson2002} published a paper on using GPUs for general purpose computing.
+Another processor that is present in a computer is the Graphics Processing Unit (GPU). A GPU has a very different architecture. It has a lot of cores (hundreds or even thousands), but each core is a lot slower than a single CPU core. Originally, GPUs were mostly used for, for example, games or the rendering of images or videos, but in 2002, Thompson et al. \cite{thompson2002} published a paper on using GPUs for general purpose computing.
 
 From that point forward, a lot of work has been done on database query processing using GPUs as well. We will discuss this work in some more detail in section \ref{sec:related-work}. Some impressive results are in this previous work. However, a lot still has to be done as well. First of all, most of the previous work focuses on a specific aspect of query processing, like joining or filtering. While results in such a specific aspect are definitely useful, those results need to be combined in a single implementation to see how a GPU would perform when processing an actual query instead of only a part of it.
 
@@ -53,6 +53,13 @@ Although quite a bit of work has been done on query processing using GPUs, a lot
 
 \section{Overview}
 \label{sec:overview}
+Before being able to start the implementation of any actual GPU algorithms, a few choices had to be made. For example, which GPU to use. Other important choices include the development environment, and source of test data. Since I already had a capable, moderately recent GPU available I chose to use that one. This GPU is a GTX 660 Ti from Nvidia \cite{gtx660ti}, which was released in August 2012. This GPU is accompanied by Intel's i5-750 CPU from late 2009 \cite{i5-750}.
+
+As the development environment, Visual Studio 2013 is used to work with CUDA \cite{CUDA} and C++. CUDA is NVIDIA's own parallel computing platform that I will be using to utilize the GPU. The well known TPC-H benchmark will be used as the source for test data \cite{tpc-h}.
+
+Some differences between CPUs and GPUs exist that are very important for the development of query processing algorithms for GPUs. First of all, as mentioned already, GPUs have a lot of relatively slow cores, while CPUs have a few fast cores. This makes the nature of the algorithms for both very different since GPUs can only work with highly parallel algorithms.
+
+Another important difference is related to the parallelism. While atomic operations for GPUs do exist, using them can significantly slow down your algorithm. If, for example, every core needs to get a memory address to write its results to, you could get an address and increase it atomically on a CPU. However, on a GPU, when hundreds or even thousands of cores are doing these atomic operations on the same memory address, this can cause significant waiting times, thereby slowing down the algorithm. This means alternative solutions for this problem, which we will discuss later, will have to be developed.
 
 \bibliography{references}{}
 \bibliographystyle{acm}
