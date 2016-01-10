@@ -87,6 +87,26 @@ One of the CPU join algorithms I implemented is a simple hash join algorithm \ci
 The other CPU join algorithm that is implemented is the sort-merge join algorithm \cite{blasgen1977}. This algorithm works by first sorting both relationships. It then iterates through both of them and adds a record to the result for every matching pair of records that is encountered in the input relationships.
 
 \subsection{GPU}
+\label{sec:gpu-implementation}
+We will now discuss the implementations of the GPU algorithms. We will start by looking at the different memory strategies that can be used. We will experiment with the different memory strategies using a simple non-indexed filtering algorithm. After that we will also look at the GPU implementation of the sort-merge join algorithm.
+
+\subsubsection{Non-indexed filter with synchronous copying}
+The most simple way to transfer all the data from the host memory to the GPU is by synchronously copying all the data at once. In this case, the actual processing of the data will not start until all the data has been copied. The GPU creates a list of booleans indicating for each record whether it matches the predefined filter. This is done using a filter kernel that is executed for every row. This means that for every record, a thread will be created to determine whether the record should be in the result or not. When the GPU completes its processing, this list of booleans is copied back to the host. The CPU is then used to create a list containing only the results that passed the filter.
+
+This might sound like an inefficient way to do the filtering, but using atomic operations on GPUs can be very slow as we mentioned before. If we want to create the actual resulting list on the GPU, we would need to add a record to a list every time we find a record that matches our filter. However, there is no easy way to do this without causing either a lot of waits from the atomic operations or memory conflicts because multiple threads are writing to the same location in the list. Therefore, we create a list of booleans indicating for each row whether it matches the filter or not so that we can use that to build the actual list on the CPU.
+
+Although the actual filtering might be very fast, it can be expected that the entire step is very slow due to the big amount of data that needs to be transferred between the host memory and the GPU memory. It is therefore likely that this step will become relatively more efficient when the filtering condition becomes more computationally expensive, since the relative time that is spent on operations that can be parallelized is bigger in that case.
+
+\subsubsection{Non-indexed filter with asynchronous copying}
+This algorithm is mostly the same as the algorithm described above. Therefore, the same considerations can also be made. However, an important difference with the algorithm above is the memory strategy. Instead of doing the copying and processing sequentially, we can also do them partially at the same time.
+
+We can do this by utilizing CUDA's so called streams. The idea is to divide the input data over the different streams. This means that we do multiple smaller copy operations instead of a single big copy operation. After the completion of a copy operation for a stream, we start the processing of the data for that stream. We can then start copying the data for the next stream, while the GPU is still processing the previous stream. This idea has been described more extensively by Mark Harris on NVIDIA's developer blog \cite{cuda-overlap-streams}.
+
+It is important to take the capabilities of the GPU into account when using this feature. It depends on the GPU if and how many copy and/or execution kernels can be used at the same time. Using this memory strategy on GPUs that do not support concurrent copying and execution can actually decrease the performance. The GPU used for the experiment does support this feature and can therefore benefit from this memory strategy.
+
+\subsubsection{Non-indexed filtering with Unified Memory}
+
+\subsubsection{Sort-merge join}
 
 \section{Results}
 \label{sec:results}
