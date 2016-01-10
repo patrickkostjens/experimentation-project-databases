@@ -262,3 +262,6 @@ FakesAssemblies/
 *.mtc1
 *.out
 *.synctex.gz
+
+report/report.pdf
+
