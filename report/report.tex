@@ -5,6 +5,10 @@
 \usepackage[hyphens]{url}
 \usepackage[hidelinks]{hyperref}
 
+\usepackage[linesnumbered]{algorithm2e}
+\DontPrintSemicolon
+\SetAlCapSkip{1em}
+
 \begin{document}
 \begin{titlepage}
 	\centering
@@ -42,6 +46,8 @@ From that point forward, a lot of work has been done on database query processin
 An extra challenge in this area is the fact that the comparison between CPU query processing and GPU query processing may have different results in different years because CPUs and GPUs may be developed at different speeds. This means that initially it may be more efficient to perform a certain operation on a CPU because the GPU version of the algorithm is slower, while a couple of years later this might be the other way around when using the same algorithms.
 
 Last year I also created a general overview of the possibilities \cite{kostjens2015}. However, in this experimental analysis of the current state of database query processing on GPUs, I will try to implement and combine some query operators on GPUs and CPUs to compare them to each other. This way, I hope to find how useful GPUs currently are compared to CPUs for database query processing. I will also try to make a comparison with the results found in the original work and I will try to combine the operations to find how useful the GPU is for processing more complete queries instead of only parts of them. This work will therefore be more detailed than my overview from last year and it will contain recent results for the discussed algorithms.
+
+%TODO memory strategies
 
 I will first discuss some related work in section \ref{sec:related-work}. Some of this work is also used to implement the GPU operations. Next, we will look at an overview of the current possibilities and some choices that were made in section \ref{sec:overview}. After that, we will discuss the implemented algorithms in section \ref{sec:implementation}. We will then look at the results in section \ref{sec:results}. Next, we will have a discussion about the results and the general state of GPUs for query processing in section \ref{sec:discussion}. Finally, we will conclude with some final remarks and a small summary in section \ref{sec:conclusion}.
 
@@ -109,8 +115,65 @@ We can do this by utilizing CUDA's so called streams. The idea is to divide the 
 It is important to take the capabilities of the GPU into account when using this feature. It depends on the GPU if and how many copy and/or execution kernels can be used at the same time. Using this memory strategy on GPUs that do not support concurrent copying and execution can actually decrease the performance. The GPU used for the experiment does support this feature and can therefore benefit from this memory strategy.
 
 \subsubsection{Non-indexed filtering with Unified Memory}
+This is the third version of the simple filtering algorithm which was described above as well. The same considerations also apply for this memory strategy. The difference in this version is the use of Unified Memory instead of explicitly copying the input data \cite{harris2013}.
+
+The goal of Unified Memory is to simplify memory management. It does this by making a pool of memory available to both the GPU and the CPU as if they are actually using the same memory. What actually happens is that all the memory in that pool is automatically copied between the CPU and GPU as needed. This makes development easier since the explicit copying of data is no longer necessary. It also has the potential to improve the performance of your application. Unified Memory only copies data that is needed at that moment. That means that not all the data is copied if only parts are needed.
+
+For our algorithm, this means that we allocate our input and result vectors in the shared pool of Unified Memory. We can then use all the data on both the CPU and GPU without explicitly copying it. This made the implementation easier, but four our application, the performance will probably not improve. Since we look at every record for the filtering process, Unified Memory will still have to copy all the data which means that ease of implementation is probably the only advantage in this case.
 
 \subsubsection{Sort-merge join}
+The next algorithm we implemented on the GPU is the sort-merge join algorithm. In 2008, He et al. also implemented this algorithm for GPUs \cite{he2008}. Some ideas for the implementation were used. This algorithm was implemented using Nvidia's Thrust library \cite{thrust}. This library contains many basic functions which are important primitives for the implementation of our join algorithm. 
+
+\begin{algorithm}[ht]
+ \label{alg:gpu-sort-merge-join}
+ \KwIn{A data set $L$ and a data set $R$ that need to be joined and a key selection function for both ($leftKeySelector$ and $rightKeySelector$ respectively).}
+ \KwOut{The join result.}
+ 
+ \tcc{Prepare the data by extracting the keys and sorting everything}
+ $leftKeys$ = Apply $leftKeySelector$ to every record in $L$\;
+ $rightKeys$ = Apply $rightKeySelector$ to every record in $R$\;
+ $leftKeys, L$ = Sort $L$ and $leftKeys$ using $leftKeys$ \;
+ $rightKeys, R$ = Sort $R$ and $rightKeys$ using $rightKeys$ \;
+ \;
+ \tcc{Calculate keys and sizes for all the partitions on both sides of the join}
+ $leftPartitionKeys, leftPartitionCounts$ = Reduction over $leftKeys$ to get keys and counts of consecutive equal keys for the partitions \;
+ $rightPartitionKeys, rightPartitionCounts$ = Reduction over $rightKeys$ to get keys and counts of consecutive equal keys for the partitions \;
+ \;
+ \tcc{Calculate sizes of cross product of all matching partitions}
+ $partitionSizes$ = Compute multiplication of counts ($leftPartitionCounts, rightPartitionCounts$) for each pair of matching keys in $leftPartitionKeys, rightPartitionKeys$ \;
+ \;
+ \tcc{Compute all the required partition start indexes}
+ $startIndexes$ = Compute prefix sum of $partitionSizes$ \;
+ $leftStartIndexes$ = Compute prefix sum of $leftPartitionCounts$ \;
+ $rightStartIndexes$ = Compute prefix sum of $rightPartitionCounts$ \;
+ \;
+ \tcc{Compute the actual join result}
+ $joinResult$ = Execute partition join kernel for all partitions (see algorithm \ref{alg:partition-join-kernel})\;
+ \Return $joinResult$ \;
+ 
+ \caption{GPU sort-merge join}
+\end{algorithm}
+
+\begin{algorithm}[ht]
+ \label{alg:partition-join-kernel}
+ \KwIn{$partitionIndex$, $leftStartIndexes$, $rightStartIndexes$, $resultStartIndexes$, $leftPartitionSizes$, $rightPartitionSizes$, $leftData$, $rightData$, $resultList$}
+ \KwOut{The partition join result at the appropriate offset in the $resultList$ paramater.}
+ $leftOffset$ = $leftStartIndexes[partitionIndex]$ \;
+ $rightOffset$ = $rightStartIndexes[partitionIndex]$ \;
+ $resultOffset$ = $resultStartIndexes[partitionIndex]$ \;
+ \;
+ \For{$i = 0; i < leftPartitionSizes[partitionIndex]; i++$}{
+  \For{$j = 0; j < rightPartitionSizes[partitionIndex]; j++$}{
+   $resultList[resultOffset]$ = Tuple of $leftData[leftOffset + i]$ and $rightData[rightOffset + j]$ \;
+   $resultOffset$ = $resultOffset + 1$\;
+  }
+ }
+ \caption{CUDA kernel to join two matching partitions}
+\end{algorithm}
+
+The pseudo code for the algorithm can be found in algorithm \ref{alg:gpu-sort-merge-join} and \ref{alg:partition-join-kernel}. This pseudo code has been simplified so it does not include the memory management that is required to make all the operations work. All the calculations shown in the algorithms are computed on the GPU. However, in the actual implementation, the CPU plays an important role in the memory management. 
+
+The algorithm first calculates a lot of sizes and offsets. These are all required to know where each partition's input needs to be read and where the output of the join results needs to be written beforehand. If we would not calculate beforehand where all the results need to be written, we would not be able to actually produce the result efficiently because either memory conflicts would occur or we would need to slow down the algorithm significantly using atomic operations. We use the partition start indexes for reading because we needed to calculate them already to determine where the results need to be written and it is then far more efficient to reuse them instead of iterating over all records until we find the correct partition.
 
 \section{Results}
 \label{sec:results}
