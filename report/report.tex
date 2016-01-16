@@ -122,7 +122,7 @@ For our algorithm, this means that we allocate our input and result vectors in t
 \subsubsection{Sort-merge join}
 The next algorithm we implemented on the GPU is the sort-merge join algorithm. In 2008, He et al. also implemented this algorithm for GPUs \cite{he2008}. Some ideas for the implementation were used. This algorithm was implemented using Nvidia's Thrust library \cite{thrust}. This library contains many basic functions which are important primitives for the implementation of our join algorithm. 
 
-\begin{algorithm}[ht]
+\begin{algorithm}
  \label{alg:gpu-sort-merge-join}
  \KwIn{A data set $L$ and a data set $R$ that need to be joined and a key selection function for both ($leftKeySelector$ and $rightKeySelector$ respectively).}
  \KwOut{The join result.}
@@ -152,7 +152,7 @@ The next algorithm we implemented on the GPU is the sort-merge join algorithm. I
  \caption{GPU sort-merge join}
 \end{algorithm}
 
-\begin{algorithm}[ht]
+\begin{algorithm}
  \label{alg:partition-join-kernel}
  \KwIn{$partitionIndex$, $leftStartIndexes$, $rightStartIndexes$, $resultStartIndexes$, $leftPartitionSizes$, $rightPartitionSizes$, $leftData$, $rightData$, $resultList$}
  \KwOut{The partition join result at the appropriate offset in the $resultList$ paramater.}
