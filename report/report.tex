@@ -37,7 +37,7 @@
 \end{abstract}
 
 \section{Introduction}
-Over the past years or even decades a lot of work has been done on database query processing. Most of this work has focused on query processing using CPUs. When developing algorithms for CPUs, algorithms are developed for a single or a few fast cores. %TODO citations
+Over the past decades a lot of work has been done on database query processing \cite{selinger1979,king1981,bratbergsengen1984}. Most of this work has focused on query processing using CPUs. When developing algorithms for CPUs, algorithms are developed for a single or a few fast cores.
 
 Another processor that is present in a computer is the Graphics Processing Unit (GPU). A GPU has a very different architecture. It has a lot of cores (hundreds or even thousands), but each core is a lot slower than a single CPU core. Originally, GPUs were mostly used for, for example, games or the rendering of images or videos, but in 2002, Thompson et al. \cite{thompson2002} published a paper on using GPUs for general purpose computing.
 
@@ -47,13 +47,11 @@ An extra challenge in this area is the fact that the comparison between CPU quer
 
 Last year I also created a general overview of the possibilities \cite{kostjens2015}. However, in this experimental analysis of the current state of database query processing on GPUs, I will try to implement and combine some query operators on GPUs and CPUs to compare them to each other. This way, I hope to find how useful GPUs currently are compared to CPUs for database query processing. I will also try to make a comparison with the results found in the original work and I will try to combine the operations to find how useful the GPU is for processing more complete queries instead of only parts of them. This work will therefore be more detailed than my overview from last year and it will contain recent results for the discussed algorithms.
 
-%TODO memory strategies
-
 I will first discuss some related work in section \ref{sec:related-work}. Some of this work is also used to implement the GPU operations. Next, we will look at an overview of the current possibilities and some choices that were made in section \ref{sec:overview}. After that, we will discuss the implemented algorithms in section \ref{sec:implementation}. We will then look at the results in section \ref{sec:results}. Next, we will have a discussion about the results and the general state of GPUs for query processing in section \ref{sec:discussion}. Finally, we will conclude with some final remarks and a small summary in section \ref{sec:conclusion}.
 
 \section{Related work}
 \label{sec:related-work}
-Since the paper by Thompson et al. in 2002 on general purpose computing using GPUs \cite{thompson2002}, a lot of research has been done on the topic of general purpose GPU's. One of the more specific topics in this area is that of database query processing using GPUs. Quite some research has been done in this area as well \cite{bakkum2010}, \cite{fang2007}, \cite{kaldeway2010}. 
+Since the paper by Thompson et al. in 2002 on general purpose computing using GPUs \cite{thompson2002}, a lot of research has been done on the topic of general purpose GPU's. One of the more specific topics in this area is that of database query processing using GPUs. Quite some research has been done in this area as well \cite{bakkum2010,fang2007,kaldeway2010}. 
 
 So far, a lot of papers have focused on specific aspects of query processing. For example, He et al. \cite{he2008} and Kaldeway et al. \cite{kaldeway2010} researched joins, while, for example, Bakkum et al. \cite{bakkum2010} and Govinderaju et al. \cite{govindaraju2004} looked at algebraic selection (filtering).  Fang et al. \cite{fang2007} even did some work on combining the processing power of CPUs and GPUs.
 
@@ -69,11 +67,11 @@ Some differences between CPUs and GPUs exist that are very important for the dev
 
 Another important difference is related to the parallelism. While atomic operations for GPUs do exist, using them can significantly slow down your algorithm. If, for example, every core needs to get a memory address to write its results to, you could get an address and increase it atomically on a CPU. However, on a GPU, when hundreds or even thousands of cores are doing these atomic operations on the same memory address, this can cause significant waiting times, thereby slowing down the algorithm. This means alternative solutions for this problem, which we will discuss later, will have to be developed.
 
-A third important difference that can influence GPU algorithms is the fact that a GPU has its own memory. It cannot use the memory of its host directly. This means that all the data that the GPU requires needs to be transferred to the GPU before it can be used. Different strategies to do this exist. We will discuss them in more detail in section \ref{sec:gpu-implementation}.
+A third important difference that can influence GPU algorithms is the fact that a GPU has its own memory. It cannot use the memory of its host directly. This means that all the data that the GPU requires needs to be transferred to the GPU before it can be used. Different strategies to do this exist. However, there are three memory management strategies available with CUDA. The first, most simple, is synchronous copying of the data. The second is asynchronous copying which means that other operations can be done simultaneously. The third is called Unified Memory. This strategy removes the need for explicit copying and copies the data for you when needed. We will discuss them in more detail in section \ref{sec:gpu-implementation}.
 
 These two differences are the most important for the design of algorithms for GPUs. A more extensive overview of the differences between CPUs and GPUs can be found in my overview from last year \cite{kostjens2015}.
 
-%TODO explain CUDA's thread/block structure
+When developing GPU algorithms using CUDA, the actual computations are executed by so called kernels. These kernels are pieces of code that can be executed on many threads at the same time. The threads can be structured in up to three dimensions. It depends on the GPU model how many threads can be used in a single dimension. When all threads in a dimension are in use, the other tasks have to wait until some thread in the dimension finishes its work. Therefore, it is important to keep these constraints in mind when executing many kernels at the same time.
 
 \section{Implementation}
 \label{sec:implementation}
