@@ -24,7 +24,7 @@ std::vector<Order>& ReadAndParseOrders(const std::string& file_path) {
 		>> current.customer_key >> delimiter
 		>> current.order_status >> delimiter
 		>> current.total_price >> delimiter
-		&& counter != 100000) {
+		&& counter != 1000) {
 		current.order_date = ReadDate(in_file);
 
 		ReadUntilSeparator(in_file, current.order_priority, sizeof(current.order_priority) / sizeof(current.order_priority[0]));

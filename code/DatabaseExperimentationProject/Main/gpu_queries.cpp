@@ -9,33 +9,44 @@
 #include <tuple>
 
 template<typename Filter, typename Item>
-void RunGenericFilter(char* filterName, char* typeName, std::vector<Item>& orders, Filter& filterLambda) {
+void RunGenericFilter(char* filterName, char* typeName, std::vector<Item>& orders, Filter& filterLambda, bool printResultCount) {
+#if DEBUG
 	std::cout << "Running " << typeName << " " << filterName << "\n";
+#endif
 	std::clock_t start = std::clock();
 	std::vector<Item>& results = filterLambda(orders);
 	size_t resultCount = results.size();
 
 	double duration = GetElapsedTime(start);
-	std::cout << "GPU result count: " << resultCount << "\n";
+	std::cout << duration << "\n";
+	if (printResultCount) {
+		std::cout << "GPU result count: " << resultCount << "\n";
+	}
+#if DEBUG
 	std::cout << "GPU processing took " << duration << "ms\n\n";
+#endif
 
 	delete &results;
 }
 
 void RunGPUFilter(std::vector<LineItem>& items) {
-	RunGenericFilter("standard GPU processor", "line item", items, gpu_filter<LineItem>);
+	RunGenericFilter("standard GPU processor", "line item", items, gpu_filter<LineItem>, true);
 	// First run takes significantly longer, so run twice
-	RunGenericFilter("standard GPU processor", "line item", items, gpu_filter<LineItem>);
-	RunGenericFilter("Unified Memory GPU processor", "line item", items, um_gpu_filter<LineItem>);
-	RunGenericFilter("async GPU processor", "line item", items, gpu_filter_async<LineItem>);
+	for (int i = 0; i < 10; i++) {
+		//RunGenericFilter("standard GPU processor", "line item", items, gpu_filter<LineItem>, false);
+		RunGenericFilter("Unified Memory GPU processor", "line item", items, um_gpu_filter<LineItem>, false);
+		//RunGenericFilter("async GPU processor", "line item", items, gpu_filter_async<LineItem>, false);
+	}
 }
 
 void RunGPUFilter(std::vector<Order>& orders) {
-	RunGenericFilter("standard GPU processor", "orders", orders, gpu_filter<Order>);
+	RunGenericFilter("standard GPU processor", "orders", orders, gpu_filter<Order>, true);
 	// First run takes significantly longer, so run twice
-	RunGenericFilter("standard GPU processor", "orders", orders, gpu_filter<Order>);
-	RunGenericFilter("Unfied Memory GPU processor", "orders", orders, um_gpu_filter<Order>);
-	RunGenericFilter("async GPU processor", "orders", orders, gpu_filter_async<Order>);
+	for (int i = 0; i < 10; i++) {
+		//RunGenericFilter("standard GPU processor", "orders", orders, gpu_filter<Order>, false);
+		RunGenericFilter("Unfied Memory GPU processor", "orders", orders, um_gpu_filter<Order>, false);
+		//RunGenericFilter("async GPU processor", "orders", orders, gpu_filter_async<Order>, false);
+	}
 }
 
 void GPUSortMergeJoin(std::vector<LineItem>& items, std::vector<Order>& orders) {

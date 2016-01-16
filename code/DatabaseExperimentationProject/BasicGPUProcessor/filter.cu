@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "cuda_helpers.cuh"
 #include <iostream>
 
@@ -35,7 +35,10 @@ std::vector<TItem>& filter_standard(std::vector<TItem>& h_items) {
 	// Reserve room for results in GPU memory
 	handleCudaError(cudaMalloc((void**)&d_results, h_count * sizeof(bool)));
 
-	std::cout << "GPU allocation and copying took " << GetElapsedTime(h_start) << "ms\n";
+	double h_preTime = GetElapsedTime(h_start);
+#if DEBUG
+	std::cout << "GPU allocation and copying took " << h_preTime << "ms\n";
+#endif
 	h_start = std::clock();
 
 	const int h_threadsPerBlock = 1024;
@@ -45,7 +48,10 @@ std::vector<TItem>& filter_standard(std::vector<TItem>& h_items) {
 	// cudaDeviceSynchronize waits for the kernel to finish, and returns any errors encountered during the launch.
 	handleCudaError(cudaDeviceSynchronize());
 
-	std::cout << "GPU filtering took " << GetElapsedTime(h_start) << "ms\n";
+	double h_computeTime = GetElapsedTime(h_start);
+#if DEBUG
+	std::cout << "GPU filtering took " << h_computeTime << "ms\n";
+#endif
 	h_start = std::clock();
 
 	// Copy output vector from GPU buffer to host memory.
@@ -53,12 +59,15 @@ std::vector<TItem>& filter_standard(std::vector<TItem>& h_items) {
 
 	std::vector<TItem>& h_returnValue = create_result_vector(h_items, h_results);
 
-	std::cout << "GPU reconstructing results (on CPU) took " << GetElapsedTime(h_start) << "ms\n";
+	double h_postTime = GetElapsedTime(h_start);
+#if DEBUG
+	std::cout << "GPU reconstructing results (on CPU) took " << h_postTime << "ms\n";
+#endif
 
 	// Cleanup
 	free(h_results);
 	cudaDeviceReset();
-
+	std::cout << h_preTime << " " << h_computeTime << " " << h_postTime << " ";
 	return h_returnValue;
 }
 
@@ -84,7 +93,10 @@ std::vector<TItem>& filter_um(std::vector<TItem>& h_items) {
 	// Reserve room for results in unified memory
 	handleCudaError(cudaMallocManaged(&m_results, h_count * sizeof(bool)));
 
-	std::cout << "GPU managed allocation and copying took " << GetElapsedTime(h_start) << "ms\n";
+	double h_preTime = GetElapsedTime(h_start);
+#if DEBUG
+	std::cout << "GPU managed allocation and copying took " <<  << "ms\n";
+#endif
 	h_start = std::clock();
 
 	const int h_threadsPerBlock = 1024;
@@ -94,17 +106,25 @@ std::vector<TItem>& filter_um(std::vector<TItem>& h_items) {
 	// cudaDeviceSynchronize waits for the kernel to finish, and returns any errors encountered during the launch.
 	handleCudaError(cudaDeviceSynchronize());
 
-	std::cout << "GPU filtering took " << GetElapsedTime(h_start) << "ms\n";
+	double h_computeTime = GetElapsedTime(h_start);
+#if DEBUG
+	std::cout << "GPU filtering took " << h_computeTime << "ms\n";
+#endif
 	h_start = std::clock();
 
 	std::vector<TItem>& h_returnValue = create_result_vector(h_items, m_results);
 
-	std::cout << "GPU reconstructing results (on CPU) took " << GetElapsedTime(h_start) << "ms\n";
+	double h_postTime = GetElapsedTime(h_start);
+#if DEBUG
+	std::cout << "GPU reconstructing results (on CPU) took " << h_postTime << "ms\n";
+#endif
 
 	// Cleanup
 	cudaFree(m_items);
 	cudaFree(m_results);
 	cudaDeviceReset();
+
+	std::cout << h_preTime << " " << h_computeTime << " " << h_postTime << " ";
 
 	return h_returnValue;
 }
@@ -185,17 +205,25 @@ std::vector<TItem>& filter_async(std::vector<TItem>& h_items) {
 		handleCudaError(cudaStreamDestroy(h_streams[h_i]));
 	}
 
-	std::cout << "GPU allocation, copying and filtering took " << GetElapsedTime(h_start) << "ms\n";
+	double h_preAndComputeTime = GetElapsedTime(h_start);
+#if DEBUG
+	std::cout << "GPU allocation, copying and filtering took " << h_preAndComputeTime << "ms\n";
+#endif
 	h_start = std::clock();
 
 	std::vector<TItem>& h_returnValue = create_result_vector(h_items, h_results);
 
-	std::cout << "GPU reconstructing results (on CPU) took " << GetElapsedTime(h_start) << "ms\n";
+	double h_postTime = GetElapsedTime(h_start);
+#if DEBUG
+	std::cout << "GPU reconstructing results (on CPU) took " << h_postTime << "ms\n";
+#endif
 
 	// Cleanup
 	free(h_results);
 	cudaFreeHost(h_pinnedItems);
 	cudaDeviceReset();
+
+	std::cout << h_preAndComputeTime << " " << h_postTime << " ";
 
 	return h_returnValue;
 }

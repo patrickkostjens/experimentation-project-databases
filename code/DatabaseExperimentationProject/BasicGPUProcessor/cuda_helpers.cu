@@ -22,7 +22,7 @@ template<> __global__ void filterKernel<LineItem>(LineItem *d_item, bool *d_resu
 	size_t d_threadIndex = threadIdx.x + blockDim.x * blockIdx.x;
 
 	if (d_threadIndex < d_totalCount) {
-		d_result[d_threadIndex] = d_item[d_threadIndex].order_key == 1;
+		d_result[d_threadIndex] = d_item[d_threadIndex].extended_price < 20000;
 	}
 }
 
