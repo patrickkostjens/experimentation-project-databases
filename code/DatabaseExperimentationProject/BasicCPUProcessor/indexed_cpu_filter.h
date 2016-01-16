@@ -17,18 +17,28 @@ public:
 	};
 
 	std::vector<ObjectType>& Filter(FilterColumnType(*selector)(const ObjectType), FilterColumnType searchValue) {
+#if DEBUG
 		std::cout << "Starting building index\n";
+#endif
 		std::clock_t start = std::clock();
 		BTree<FilterColumnType, ObjectType> index(3);
 
 		for (unsigned int i = 0; i < _data->size(); i++) {
 			index.insert(selector(_data->at(i)), _data->at(i));
 		}
-		std::cout << "Building index took " << GetElapsedTime(start) << "ms\n";
+		double buildTime = GetElapsedTime(start);
+#if DEBUG
+		std::cout << "Building index took " << buildTime << "ms\n";
+#endif
 		start = std::clock();
 
 		std::vector<ObjectType> *result = new std::vector<ObjectType>(index.find(searchValue));
-		std::cout << "Indexed search took " << GetElapsedTime(start) << "ms\n";
+		double searchTime = GetElapsedTime(start);
+#if DEBUG
+		std::cout << "Indexed search took " << searchTime << "ms\n";
+#endif
+
+		std::cout << buildTime << " " << searchTime << "\n";
 		return *result;
 	};
 };

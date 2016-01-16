@@ -11,7 +11,7 @@
 #include "../BasicCPUProcessor/indexed_cpu_filter.h"
 
 bool LineItemFilter(LineItem item) {
-	return item.order_key == 1;
+	return item.extended_price < 20000;
 }
 
 int LineItemFilterPropertySelector(LineItem item) {
@@ -39,57 +39,75 @@ inline double GetElapsedTime(clock_t& since) {
 }
 
 void RunCPUFilter(std::vector<LineItem>& items) {
+#if DEBUG
 	std::cout << "Running line items CPU filter\n";
+#endif
 	BasicCPUFilter<LineItem> processor(items);
 	std::clock_t start = std::clock();
 	std::vector<LineItem>& results = processor.Filter(&LineItemFilter);
 	size_t resultCount = results.size();
 
 	double duration = GetElapsedTime(start);
+#if DEBUG
 	std::cout << "CPU result count: " << resultCount << "\n";
 	std::cout << "CPU Filtering took " << duration << "ms\n\n";
+#endif
+	std::cout << duration << "\n";
 
 	delete &results;
 }
 
 void RunCPUFilter(std::vector<Order>& orders) {
+#if DEBUG
 	std::cout << "Running orders CPU filter\n";
+#endif
 	BasicCPUFilter<Order> processor(orders);
 	std::clock_t start = std::clock();
 	std::vector<Order>& results = processor.Filter(&OrderFilter);
 	size_t resultCount = results.size();
 
 	double duration = GetElapsedTime(start);
+#if DEBUG
 	std::cout << "CPU result count: " << resultCount << "\n";
 	std::cout << "CPU Filtering took " << duration << "ms\n\n";
+#endif
+	std::cout << duration << "\n";
 
 	delete &results;
 }
 
 void RunIndexedCPUFilter(std::vector<LineItem>& items) {
+#if DEBUG
 	std::cout << "Running indexed line items CPU filter\n";
+#endif
 	IndexedCPUFilter<LineItem, int> processor(items);
 	std::clock_t start = std::clock();
 	std::vector<LineItem>& results = processor.Filter(&LineItemFilterPropertySelector, 1);
 	size_t resultCount = results.size();
 
 	double duration = GetElapsedTime(start);
+#if DEBUG
 	std::cout << "CPU result count: " << resultCount << "\n";
 	std::cout << "CPU Indexed filtering took " << duration << "ms\n\n";
+#endif
 
 	delete &results;
 }
 
 void RunIndexedCPUFilter(std::vector<Order>& orders) {
+#if DEBUG
 	std::cout << "Running indexed orders CPU filter\n";
+#endif
 	IndexedCPUFilter<Order, char> processor(orders);
 	std::clock_t start = std::clock();
 	std::vector<Order>& results = processor.Filter(&OrderFilterPropertySelector, 'O');
 	size_t resultCount = results.size();
 
 	double duration = GetElapsedTime(start);
+#if DEBUG
 	std::cout << "CPU result count: " << resultCount << "\n";
 	std::cout << "CPU Indexed filtering took " << duration << "ms\n\n";
+#endif
 
 	delete &results;
 }
@@ -127,21 +145,34 @@ void ExecuteCPUQuery(Query query)
 	if (query == Query::FILTER_ORDERS) {
 		std::vector<Order>& orders = ReadAllOrders("..\\..\\orders.tbl");
 		RunCPUFilter(orders);
+		for (int i = 0; i < 10; i++) {
+			RunCPUFilter(orders);
+		}
 		delete &orders;
 	}
 	else if (query == Query::FILTER_LINE_ITEM) {
 		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
 		RunCPUFilter(items);
+		for (int i = 0; i < 10; i++) {
+			RunCPUFilter(items);
+		}
 		delete &items;
 	}
 	else if (query == Query::INDEXED_FILTER_LINE_ITEM) {
 		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
+
 		RunIndexedCPUFilter(items);
+		for (int i = 0; i < 10; i++) {
+			RunIndexedCPUFilter(items);
+		}
 		delete &items;
 	}
 	else if (query == Query::INDEXED_FILTER_ORDERS) {
 		std::vector<Order>& orders = ReadAllOrders("..\\..\\orders.tbl");
 		RunIndexedCPUFilter(orders);
+		for (int i = 0; i < 10; i++) {
+			RunIndexedCPUFilter(orders);
+		}
 		delete &orders;
 	}
 	else if (query == Query::JOIN_LINE_ITEM_ORDERS) {
