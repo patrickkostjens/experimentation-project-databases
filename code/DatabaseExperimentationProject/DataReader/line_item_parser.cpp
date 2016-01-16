@@ -5,6 +5,8 @@
 #include <fstream>
 #include "line_item_parser.h"
 #include "reader_helpers.h"
+#include <algorithm>
+
 
 std::vector<LineItem>& ReadAndParseLineItems(const std::string& file_path) {
 	std::vector<LineItem>& items = *new std::vector<LineItem>;
@@ -37,7 +39,6 @@ std::vector<LineItem>& ReadAndParseLineItems(const std::string& file_path) {
 		ReadUntilSeparator(in_file, current.ship_instruct, sizeof(current.ship_instruct) / sizeof(current.ship_instruct[0]));
 		ReadUntilSeparator(in_file, current.ship_mode, sizeof(current.ship_mode) / sizeof(current.ship_mode[0]));
 		ReadUntilSeparator(in_file, current.comment, sizeof(current.comment) / sizeof(current.comment[0]));
-
 		items.push_back(current);
 		counter++;
 		if (counter % 1000 == 0) {
@@ -46,6 +47,6 @@ std::vector<LineItem>& ReadAndParseLineItems(const std::string& file_path) {
 	}
 	// Include some spaces to overwrite big numbers that might be printed above
 	std::cout << "Done reading line items     \n";
-
+	std::random_shuffle(items.begin(), items.end(), random);
 	return items;
 }

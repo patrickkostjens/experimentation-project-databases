@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <fstream>
 #include "reader_helpers.h"
+#include <cstdlib>
 
 const tm ParseDate(const std::string& date_string) {
 	time_t raw_time;
@@ -27,3 +28,5 @@ const tm ReadDate(std::ifstream& in_file) {
 
 	return ParseDate(buf);
 }
+
+int random(int i) { return std::rand() % i; }

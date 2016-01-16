@@ -5,6 +5,7 @@
 #include <fstream>
 #include "order_parser.h"
 #include "reader_helpers.h"
+#include <algorithm>
 
 std::vector<Order>& ReadAndParseOrders(const std::string& file_path) {
 	std::vector<Order>& orders = *new std::vector<Order>;
@@ -39,6 +40,7 @@ std::vector<Order>& ReadAndParseOrders(const std::string& file_path) {
 	}
 	// Include some spaces to overwrite big numbers that might be printed above
 	std::cout << "Done reading orders     \n";
+	std::random_shuffle(orders.begin(), orders.end(), random);
 
 	return orders;
 }
