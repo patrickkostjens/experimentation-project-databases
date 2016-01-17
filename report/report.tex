@@ -48,7 +48,7 @@ An extra challenge in this area is the fact that the comparison between CPU quer
 
 Last year I also created a general overview of the possibilities \cite{kostjens2015}. However, in this experimental analysis of the current state of database query processing on GPUs, I will try to implement and combine some query operators on GPUs and CPUs to compare them to each other. This way, I hope to find how useful GPUs currently are compared to CPUs for database query processing. I will also try to make a comparison with the results found in the original work and I will try to combine the operations to find how useful the GPU is for processing more complete queries instead of only parts of them. This work will therefore be more detailed than my overview from last year and it will contain recent results for the discussed algorithms.
 
-I will first discuss some related work in section \ref{sec:related-work}. Some of this work is also used to implement the GPU operations. Next, we will look at an overview of the current possibilities and some choices that were made in section \ref{sec:overview}. After that, we will discuss the implemented algorithms in section \ref{sec:implementation}. We will then look at the results in section \ref{sec:results}. Next, we will have a discussion about the results and the general state of GPUs for query processing in section \ref{sec:discussion}. Finally, we will conclude with some final remarks and a small summary in section \ref{sec:conclusion}.
+I will first discuss some related work in section \ref{sec:related-work}. Some of this work is also used to implement the GPU operations. Next, we will look at an overview of the current possibilities and some choices that were made in section \ref{sec:overview}. After that, we will discuss the implemented algorithms in section \ref{sec:implementation}. We will then look at the results in section \ref{sec:results}. Next, we will have a discussion about the results and the general state of GPUs for query processing in section \ref{sec:discussion}. We will then look at the possibilities for future research. We will conclude with some final remarks and a small summary in section \ref{sec:conclusion}.
 
 \section{Related work}
 \label{sec:related-work}
@@ -91,10 +91,10 @@ The most simple algorithm is the non-indexed filtering algorithm. This algorithm
 A filtering algorithm that is a bit more complex is the indexed filtering algorithm. I implemented a B-tree to serve as the index \cite{comer1979}. First, the B-tree is built for a predetermined column or set of columns. Next, this tree is searched for elements with a certain value for the indexed columns. The result can consist of zero or more values.
 
 \subsubsection{Hash join}
-One of the CPU join algorithms I implemented is a simple hash join algorithm \cite{dewitt1985}. This algorithm works by creating two hash tables, each containing the records for one of the join relationships. The join key is used for hashing. The join result is computed by taking the cartesian product of every pair of partitions that has the same key.
+One of the CPU join algorithms I implemented is a simple hash join algorithm \cite{dewitt1985}. This algorithm works by creating two hash tables, each containing the records for one of the join relationships. The join key is used for hashing. The join result is computed by taking the Cartesian product of every pair of partitions that has the same key.
 
 \subsubsection{Sort-merge join}
-The other CPU join algorithm that is implemented is the sort-merge join algorithm \cite{blasgen1977}. This algorithm works by first sorting both relationships. It then iterates through both of them and adds a record to the result for every matching pair of records that is encountered in the input relationships.
+The second CPU join algorithm that is implemented is the sort-merge join algorithm \cite{blasgen1977}. This algorithm works by first sorting both relationships. It then iterates through both of them and adds a record to the result for every matching pair of records that is encountered in the input relationships. A possible advantage of this method over other join algorithms is that its join result is also sorted.
 
 \subsection{GPU}
 \label{sec:gpu-implementation}
@@ -349,16 +349,37 @@ When comparing the CPU and GPU performance, we can see that the CPU generally wi
 So far we have looked mostly at the computational performance of the algorithms. However, another aspect that might also be important is the time it takes to implement the algorithms. We will start this section by looking at that. After that, we will discuss the performance comparison between CPU and GPU algorithms a bit more. We will finish the discussion by looking at how useful the GPU might be for query processing applications.
 
 \subsection{Ease of implementation}
+When we look at the effort it takes to implement GPU algorithms and compare this to the effort it takes to implement their CPU counter parts, the GPU does not do very well. We can already see this if we simply look at the amount of code required to implement the algorithms. The CPU sort-merge join algorithm took approximately 70 lines. However, the GPU sort-merge join took a little over 200 lines. This different is mostly caused by the big number of extra steps that is required for the GPU algorithm. We can also see this in algorithm \ref{alg:gpu-sort-merge-join}. We see similar results for the filter algorithms. The synchronous GPU algorithm takes approximately 50 lines. The asynchronous strategy takes almost 90 lines of code, while the Unified Memory approach also takes 50 lines. This is a lot compared to the simple CPU filter at approximately 20 lines.
+
+Another factor that I think is important for the ease of implementation is the amount of documentation and other helpful resources available. During the implementation of the GPU algorithms, I found that there is a lot fewer of those resources available when working with CUDA (and probably other GPGPU languages). This also makes the implementation of algorithms more difficult.
+
+The tools that are available, at least for CUDA in C++, are also not as complete as the tools that are available for most CPU languages. For example, debugging CUDA code is a lot more difficult since you only know that something went wrong once an operation has completed. 
+
+Finally, in my opinion, developing for a GPU requires a completely different mindset from developing for a CPU. This is caused by the highly multithreaded nature of GPUs. This is not necessarily a problem, but it can make developing GPU algorithms more difficult when you are used to developing for CPUs.
 
 \subsection{Performance}
 \label{sec:discussion-performance}
+In section \ref{sec:results}, we already took a look at the results. However, if we only look at the times we found there, without making some nuances, the GPU algorithms do not seem very useful. 
+
+As it currently stands, copying input data to the GPU is a part of the process that relatively takes a lot of time. In the worst cases, it takes more time than then entire computation would take on the CPU. This problem is not easily solved, but that does not mean that we cannot use GPUs for query processing. Because the computations themselves are often faster than on the CPU. 
+
+This means that GPUs can possibly improve the performance of a database if the data is already loaded in its memory. This can be the case in, for example, data warehouses or other databases that are not updated often. However, one important problem to keep in mind in these situations is that all the data that is needed has to fit in the GPU memory. Otherwise the data copying becomes a bottleneck again. 
+
+It is likely that the GPU performance will also be relatively better when the size of the result is smaller, so that copying the result to the host does not take too much time either. As it currently stands, however, it does not seem to be the case that GPUs can improve the performance of databases with a lot of updates or databases that do not fit in memory.
 
 \subsection{Expectations}
+Personally, I do not expect that GPUs will become commonly used in database query processing until the time it takes to transfer data between the CPU and GPU memory is improved. As it currently stands, this causes too many limitations to be usable in practice. Another potential problem is the fact that it likely takes a big effort to implement all the required query operators of a complete database management system.
 
 \section{Future work}
+There is still a lot that can be done in the area of GPU query processing. Although the ultimate goal would possibly be a fully functional DBMS that does all or most of its processing using a GPU, there are other, smaller problems that can be researched as well.
+
+A comparison between CUDA and, for example, OpenCL when applied to query processing could also be interesting. Another possibility is the implementation of some of the complete benchmark queries defined in TPC-H. This does not immediately require a complete DBMS, but it requires combining some more operations than were implemented in this project. Such a TPC-H benchmark implementation could also make it easier to compare the performance to other complete systems.
+
+Although quite a bit of research has already been done on the implementation of specific operations, I think it could also be good to see some completely new solutions to these problems. Since the research of GPU algorithms is not as far as the research of CPU algorithms, it is possible that some new, faster algorithms are still to be found found for some operations. This could also increase the chance of GPUs becoming useful for query processing.
 
 \section{Conclusion}
 \label{sec:conclusion}
+
 
 \bibliography{references}{}
 \bibliographystyle{acm}
