@@ -180,7 +180,7 @@ The algorithm first calculates a lot of sizes and offsets. These are all require
 
 \section{Results}
 \label{sec:results}
-As mentioned before, the TPC-H benchmark will be used to generate the test data \cite{tpc-h}. For the experiments, the \emph{lineitem} and \emph{order} tables were used in the experiments. Millions of rows were generated, but in the experiments, subsets of this data will be used. The content of the rows is completely random, but the keys are generated in increasing order. Therefore, we can take subsets of the data from the beginning of the tables while ensuring that results will be found. Before actually using the data in the algorithms, we will shuffle the selected data randomly to keep the comparison between different algorithms fair in case some benefit from sorted input data.
+As mentioned before, the TPC-H benchmark will be used to generate the test data \cite{tpc-h}. For the experiments, the \emph{lineitem} and \emph{order} tables were used. Millions of rows were generated, but in the experiments, subsets of this data will be used. The content of the rows is completely random, but the keys are generated in increasing order. Therefore, we can take subsets of the data from the beginning of the tables while ensuring that results will be found. Before actually using the data in the algorithms, we will shuffle the selected data randomly to keep the comparison between different algorithms fair in case some benefit from sorted input data.
 
 In all the experiments, the reported times will be base on averages over 10 runs. This should ensure that the results are reliable and not influenced by external factors like other processes.
 
@@ -302,10 +302,51 @@ Now, we will compare the GPU results to the GPU results. What immediately become
 Because the processing times themselves are good for GPUs, they are still potentially useful in the field of query processing. We will discuss this in more detail in section \ref{sec:discussion-performance}.
 
 \subsection{Joins}
-In the final experiments we will take a look at the join algorithms.
+In the final experiments we will take a look at the join algorithms. We will join the \emph{order} and \emph{lineitem} tables by their \emph{orderkey} column. \emph{orderkey} is the primary key of the \emph{order} table. Therefore, every order is joined with zero or more line items, while every line item is joined with one order.
+
+We take the same number of rows from both relations for the experiments. This will always result in the same number of output rows as we have input rows in one relation in this case, since we will find every line item with the matching order in the output. We will not find the remaining orders since they have no matching line items. The results can be found in table \ref{tbl:join-results}. More detailed results for the GPU can be found in table \ref{tbl:join-gpu}.
+
+\begin{table}
+\begin{tabular}{l r r r}
+\toprule
+\textbf{Count} & \textbf{CPU Sort-merge} & \textbf{CPU Hash} & \textbf{GPU Sort-merge} \\
+\midrule
+1000    & 1      & 0,7    & 14,6 \\
+10000   & 13,8   & 9,9    & 44,4 \\
+100000  & 185,3  & 139,1  & 348,3 \\
+1000000 & 1943,4 & 1508,1 & 3409,1 \\
+\bottomrule
+\end{tabular}
+\label{tbl:join-results}
+\caption{Results in milliseconds for both CPU and GPU join algorithms}
+\end{table}
+
+\begin{table}
+\begin{tabular}{l r r r r}
+\toprule
+\textbf{Count} & \textbf{Pre} & \textbf{Compute} & \textbf{Post} & \textbf{Total}\\
+\midrule
+1000    & 10,2   & 1,8   & 0,7   & 14,6 \\
+10000   & 28     & 7,4   & 6     & 44,4 \\
+100000  & 188,9  & 86    & 63,4  & 348,3 \\
+1000000 & 1819,4 & 865,4 & 655,4 & 3409,1 \\
+\bottomrule
+\end{tabular}
+\label{tbl:join-gpu}
+\caption{Results in milliseconds for sort-merge join on the GPU}
+\end{table}
+
+The column names in table \ref{tbl:join-gpu} match those of the tables we saw before. The \emph{Pre} column includes everything until the actual calculation of the join result (including the computation of all required start indexes and sizes). The \emph{Compute} is the time it actually took to calculate the result, while the \emph{Post} and \emph{Total} represent the time it takes to copy the results to the host and the total time for the entire process respectively.
+
+We can see some interesting results in these tables. First of all, compared to the filtering algorithms, the preprocessing times are smaller. The only explanation I have for this is that the Thrust library that was used for this algorithm somehow has a smaller constant overhead compared to the memory strategies that were implemented for the filtering. 
+
+We can also see that the CPU hash join algorithm generally performs better than the sort-merge join algorithm. However, this does not mean the sort-merge algorithm is not useful. If the input for the algorithm would already be sorted (i.e. because it was indexed), or if sorted output is required, the sort-merge join algorithm might perform better.
+
+When comparing the CPU and GPU performance, we can see that the CPU generally wins. However, if we only take the computation and postprocessing times into account (we can do this if the input is already in the GPU memory), there is not much of a difference.
 
 \section{Discussion}
 \label{sec:discussion}
+So far we have looked mostly at the computational performance of the algorithms. However, another aspect that might also be important is the time it takes to implement the algorithms. We will start this section by looking at that. After that, we will discuss the performance comparison between CPU and GPU algorithms a bit more. We will finish the discussion by looking at how useful the GPU might be for query processing applications.
 
 \subsection{Ease of implementation}
 
@@ -314,7 +355,7 @@ In the final experiments we will take a look at the join algorithms.
 
 \subsection{Expectations}
 
-\subsection{Future work}
+\section{Future work}
 
 \section{Conclusion}
 \label{sec:conclusion}
