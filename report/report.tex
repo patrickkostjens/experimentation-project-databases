@@ -33,7 +33,7 @@
 \end{titlepage}
 
 \begin{abstract}
-So far, database query processing has mostly been done using CPUs. However, recent research shows that GPUs might be able to improve the query processing performance. In this experimental analysis, we implement filter and join algorithms on both the CPU and the GPU. We compare their performance and look at some important factors that influence the performance. This gives us an idea of the current possibilities of GPUs for database query processing. We find that there are some problems with GPUs that severely limit the current applications. However, GPUs do have the potential to play an important role in speeding up database queries.
+So far, database query processing has mostly been done using CPUs. However, recent research shows that GPUs might be able to improve the query processing performance. In this experimental analysis, we implement filter and join algorithms on both the CPU and the GPU. We compare their performance and look at some important factors that influence the performance. This gives us an idea of the current possibilities of GPUs for database query processing. We found that there are some problems with GPUs that severely limit the current applications. However, GPUs do have the potential to play an important role in speeding up database queries.
 
 \textbf{Keywords:} query processing, graphics processing unit, relational database, parallel processing, CUDA
 \end{abstract}
@@ -43,13 +43,13 @@ Over the past decades a lot of work has been done on database query processing \
 
 Another processor that is present in a computer is the Graphics Processing Unit (GPU). A GPU has a very different architecture. It has a lot of cores (hundreds or even thousands), but each core is a lot slower than a single CPU core. Originally, GPUs were mostly used for, for example, games or the rendering of images or videos, but in 2002, Thompson et al. \cite{thompson2002} published a paper on using GPUs for general purpose computing.
 
-From that point forward, a lot of work has been done on database query processing using GPUs as well. We will discuss this work in some more detail in section \ref{sec:related-work}. Some impressive results are in this previous work. However, a lot still has to be done as well. First of all, most of the previous work focuses on a specific aspect of query processing, like joining or filtering. While results in such a specific aspect are definitely useful, those results need to be combined in a single implementation to see how a GPU would perform when processing an actual query instead of only a part of it.
+From that point forward, a lot of work has been done on database query processing using GPUs as well. We will discuss this work in some more detail in section \ref{sec:related-work}. Some impressive results are in this previous work. However, a lot still has to be done as well. 
 
 An extra challenge in this area is the fact that the comparison between CPU query processing and GPU query processing may have different results in different years because CPUs and GPUs may be developed at different speeds. This means that initially it may be more efficient to perform a certain operation on a CPU because the GPU version of the algorithm is slower, while a couple of years later this might be the other way around when using the same algorithms.
 
-Last year I also created a general overview of the possibilities \cite{kostjens2015}. However, in this experimental analysis of the current state of database query processing on GPUs, I will try to implement and combine some query operators on GPUs and CPUs to compare them to each other. This way, I hope to find how useful GPUs currently are compared to CPUs for database query processing. I will also try to make a comparison with the results found in the original work and I will try to combine the operations to find how useful the GPU is for processing more complete queries instead of only parts of them. This work will therefore be more detailed than my overview from last year and it will contain recent results for the discussed algorithms.
+Last year I also created a general overview of the possibilities \cite{kostjens2015}. However, in this experimental analysis of the current state of database query processing on GPUs, I will try to implement some query operators myself on both GPUs and CPUs to compare them to each other. This way, I hope to find how useful GPUs currently are compared to CPUs for database query processing. This work will therefore be more detailed than my overview from last year and it will contain recent results for the discussed algorithms.
 
-I will first discuss some related work in section \ref{sec:related-work}. Some of this work is also used to implement the GPU operations. Next, we will look at an overview of the current possibilities and some choices that were made in section \ref{sec:overview}. After that, we will discuss the implemented algorithms in section \ref{sec:implementation}. We will then look at the results in section \ref{sec:results}. Next, we will have a discussion about the results and the general state of GPUs for query processing in section \ref{sec:discussion}. We will then look at the possibilities for future research. We will conclude with some final remarks and a small summary in section \ref{sec:conclusion}.
+I will first discuss some related work in section \ref{sec:related-work}. Next, we will look at an overview of the current possibilities and some choices that were made in section \ref{sec:overview}. After that, we will discuss the implemented algorithms in section \ref{sec:implementation}. We will then look at the results in section \ref{sec:results}. Next, we will have a discussion about the results and the general state of GPUs for query processing in section \ref{sec:discussion}. We will then look at the possibilities for future research. We will conclude with some final remarks and a small summary in section \ref{sec:conclusion}.
 
 \section{Related work}
 \label{sec:related-work}
@@ -61,9 +61,9 @@ Although quite a bit of work has been done on query processing using GPUs, a lot
 
 \section{Overview}
 \label{sec:overview}
-Before being able to start the implementation of any actual GPU algorithms, a few choices had to be made. For example, which GPU to use. Other important choices include the development environment, and source of test data. Since I already had a capable, moderately recent GPU available I chose to use that one. This GPU is a GTX 660 Ti from Nvidia \cite{gtx660ti}, which was released in August 2012. This GPU is accompanied by Intel's i5-750 CPU from late 2009 \cite{i5-750}.
+Before being able to start the implementation of any actual GPU algorithms, a few choices had to be made. For example, which GPU to use. Other important choices include the development environment, and the source of test data. Since I already had a capable, moderately recent GPU available I chose to use that one. This GPU is a GTX 660 Ti from Nvidia \cite{gtx660ti}, which was released in August 2012. This GPU is accompanied by Intel's i5-750 CPU from late 2009 \cite{i5-750}.
 
-As the development environment, Visual Studio 2013 is used to work with CUDA \cite{CUDA} and C++. CUDA is NVIDIA's own parallel computing platform that I will be using to utilize the GPU. The well known TPC-H benchmark will be used as the source for test data \cite{tpc-h}.
+As the development environment, Visual Studio 2013 is used to work with CUDA \cite{CUDA} and C++. CUDA is Nvidia's own parallel computing platform that I will be using to utilize the GPU. The well known TPC-H benchmark will be used as the source for test data \cite{tpc-h}.
 
 Some differences between CPUs and GPUs exist that are very important for the development of query processing algorithms for GPUs. First of all, as mentioned already, GPUs have a lot of relatively slow cores, while CPUs have a few fast cores. This makes the nature of the algorithms for both very different since GPUs can only work with highly parallel algorithms.
 
@@ -71,15 +71,15 @@ Another important difference is related to the parallelism. While atomic operati
 
 A third important difference that can influence GPU algorithms is the fact that a GPU has its own memory. It cannot use the memory of its host directly. This means that all the data that the GPU requires needs to be transferred to the GPU before it can be used. Different strategies to do this exist. However, there are three memory management strategies available with CUDA. The first, most simple, is synchronous copying of the data. The second is asynchronous copying which means that other operations can be done simultaneously. The third is called Unified Memory. This strategy removes the need for explicit copying and copies the data for you when needed. We will discuss them in more detail in section \ref{sec:gpu-implementation}.
 
-These two differences are the most important for the design of algorithms for GPUs. A more extensive overview of the differences between CPUs and GPUs can be found in my overview from last year \cite{kostjens2015}.
+These three differences are the most important for the design of algorithms for GPUs. A more extensive overview of the differences between CPUs and GPUs can be found in my overview from last year \cite{kostjens2015}.
 
 When developing GPU algorithms using CUDA, the actual computations are executed by so called kernels. These kernels are pieces of code that can be executed on many threads at the same time. The threads can be structured in up to three dimensions. It depends on the GPU model how many threads can be used in a single dimension. When all threads in a dimension are in use, the other tasks have to wait until some thread in the dimension finishes its work. Therefore, it is important to keep these constraints in mind when executing many kernels at the same time.
 
 \section{Implementation}
 \label{sec:implementation}
-The original idea was to implement all the important algebraic operations for query processing and to combine them as well. However, it turned out to be too much work to do all of this. Eventually, I implemented non indexed and indexed filtering for CPUs, as well as hash join and sort-merge join. For GPUs, non indexed filtering was implemented using Unified Memory and both synchronously and asynchronously copying the results manually. Sort-merge join was also implemented for GPUs.
+The original idea was to implement all the important algebraic operations for query processing and to combine them as well. However, it turned out to be too much work to do all of this. Eventually, I implemented non indexed and indexed filtering for CPUs, as well as hash join and sort-merge join. For GPUs, non indexed filtering was implemented using Unified Memory and both synchronous and asynchronous copying. Sort-merge join was also implemented for GPUs.
 
-Simple projection (meaning column filtering) could have been implemented relatively easy as well for GPUs, but since this would not include any real computations, I did not do that. However, if there would have been time to implement projections including aggregations, the results could have been interesting.
+Simple projection (meaning column filtering) could have been implemented relatively easy as well for GPUs, but since this would not include any real computations that could benefit from a GPU's power, I did not do that. However, if there would have been time to implement projections including aggregations, the results of that would have been interesting.
 
 \subsection{CPU}
 \label{sec:cpu-implementation}
@@ -92,10 +92,10 @@ The most simple algorithm is the non-indexed filtering algorithm. This algorithm
 A filtering algorithm that is a bit more complex is the indexed filtering algorithm. I implemented a B-tree to serve as the index \cite{comer1979}. First, the B-tree is built for a predetermined column or set of columns. Next, this tree is searched for elements with a certain value for the indexed columns. The result can consist of zero or more values.
 
 \subsubsection{Hash join}
-One of the CPU join algorithms I implemented is a simple hash join algorithm \cite{dewitt1985}. This algorithm works by creating two hash tables, each containing the records for one of the join relationships. The join key is used for hashing. The join result is computed by taking the Cartesian product of every pair of partitions that has the same key.
+One of the CPU join algorithms I implemented is a simple hash join algorithm \cite{dewitt1985}. This algorithm works by creating two hash tables, each containing the records for one of the join relationships. The join key is used for hashing. The join result is computed by taking the Cartesian product of every pair of partitions that has the same key. These partitions can efficiently be found in the hash table using a hash of the partition key.
 
 \subsubsection{Sort-merge join}
-The second CPU join algorithm that is implemented is the sort-merge join algorithm \cite{blasgen1977}. This algorithm works by first sorting both relationships. It then iterates through both of them and adds a record to the result for every matching pair of records that is encountered in the input relationships. A possible advantage of this method over other join algorithms is that its join result is also sorted.
+The second CPU join algorithm that is implemented is the sort-merge join algorithm \cite{blasgen1977}. This algorithm works by first sorting both relations. It then iterates through both of them and adds a record to the result for every matching pair of records that is encountered in the input relations. A possible advantage of this method over other join algorithms is that its join result is also sorted.
 
 \subsection{GPU}
 \label{sec:gpu-implementation}
@@ -103,7 +103,7 @@ We will now discuss the implementations of the GPU algorithms. We will start by 
 
 \subsubsection{Non-indexed filter with synchronous copying}
 \label{sec:filter-synchronous}
-The most simple way to transfer all the data from the host memory to the GPU is by synchronously copying all the data at once. In this case, the actual processing of the data will not start until all the data has been copied. The GPU creates a list of booleans indicating for each record whether it matches the predefined filter. This is done using a filter kernel that is executed for every row. This means that for every record, a thread will be created to determine whether the record should be in the result or not. When the GPU completes its processing, this list of booleans is copied back to the host. The CPU is then used to create a list containing only the results that passed the filter.
+The simplest way to transfer all the data from the host memory to the GPU is by synchronously copying all the data at once. In this case, the actual processing of the data will not start until all the data has been copied. The GPU creates a list of booleans indicating for each record whether it matches the predefined filter. This is done using a filter kernel that is executed for every row. This means that for every record, a thread will be created to determine whether the record should be in the result or not. When the GPU completes its processing, this list of booleans is copied back to the host. The CPU is then used to create a list containing only the results that passed the filter.
 
 This might sound like an inefficient way to do the filtering, but using atomic operations on GPUs can be very slow as we mentioned before. If we want to create the actual resulting list on the GPU, we would need to add a record to a list every time we find a record that matches our filter. However, there is no easy way to do this without causing either a lot of waits from the atomic operations or memory conflicts because multiple threads are writing to the same location in the list. Therefore, we create a list of booleans indicating for each row whether it matches the filter or not so that we can use that to build the actual list on the CPU.
 
@@ -113,9 +113,9 @@ Although the actual filtering might be very fast, it can be expected that the en
 \label{sec:filter-asynchronous}
 This algorithm is mostly the same as the algorithm described above. Therefore, the same considerations can also be made. However, an important difference with the algorithm above is the memory strategy. Instead of doing the copying and processing sequentially, we can also do them partially at the same time.
 
-We can do this by utilizing CUDA's so called streams. The idea is to divide the input data over the different streams. This means that we do multiple smaller copy operations instead of a single big copy operation. After the completion of a copy operation for a stream, we start the processing of the data for that stream. We can then start copying the data for the next stream, while the GPU is still processing the previous stream. This idea has been described more extensively by Mark Harris on NVIDIA's developer blog \cite{cuda-overlap-streams}.
+We can do this by utilizing CUDA's so called streams. The idea is to divide the input data over the different streams. This means that we do multiple smaller copy operations instead of a single big copy operation. After the completion of a copy operation for a stream, we start the processing of the data for that stream. We can then start copying the data for the next stream, while the GPU is still processing the previous stream. This idea has been described more extensively by Mark Harris on Nvidia's developer blog \cite{cuda-overlap-streams}.
 
-It is important to take the capabilities of the GPU into account when using this feature. It depends on the GPU if and how many copy and/or execution kernels can be used at the same time. Using this memory strategy on GPUs that do not support concurrent copying and execution can actually decrease the performance. The GPU used for the experiment does support this feature and can therefore benefit from this memory strategy.
+It is important to take the capabilities of the GPU into account when using this feature. It depends on the GPU if and how many copy and/or execution kernels can be used at the same time. Using this memory strategy on GPUs that do not support concurrent copying and execution can actually decrease the performance. The GPU used for the experiments does support this feature and can therefore benefit from this memory strategy.
 
 \subsubsection{Non-indexed filtering with Unified Memory}
 \label{sec:filter-unified-memory}
@@ -126,7 +126,7 @@ The goal of Unified Memory is to simplify memory management. It does this by mak
 For our algorithm, this means that we allocate our input and result vectors in the shared pool of Unified Memory. We can then use all the data on both the CPU and GPU without explicitly copying it. This made the implementation easier, but four our application, the performance will probably not improve. Since we look at every record for the filtering process, Unified Memory will still have to copy all the data which means that ease of implementation is probably the only advantage in this case.
 
 \subsubsection{Sort-merge join}
-The next algorithm we implemented on the GPU is the sort-merge join algorithm. In 2008, He et al. also implemented this algorithm for GPUs \cite{he2008}. Some ideas for the implementation were used. This algorithm was implemented using Nvidia's Thrust library \cite{thrust}. This library contains many basic functions which are important primitives for the implementation of our join algorithm. 
+The next algorithm we implemented on the GPU is the sort-merge join algorithm. In 2008, He et al. also implemented this algorithm for GPUs \cite{he2008}. Some ideas from their paper were used. This algorithm was implemented using Nvidia's Thrust library \cite{thrust}. This library contains many basic functions which are important primitives for the implementation of our join algorithm. 
 
 \begin{algorithm}
  \label{alg:gpu-sort-merge-join}
@@ -161,7 +161,7 @@ The next algorithm we implemented on the GPU is the sort-merge join algorithm. I
 \begin{algorithm}
  \label{alg:partition-join-kernel}
  \KwIn{$partitionIndex$, $leftStartIndexes$, $rightStartIndexes$, $resultStartIndexes$, $leftPartitionSizes$, $rightPartitionSizes$, $leftData$, $rightData$, $resultList$}
- \KwOut{The partition join result at the appropriate offset in the $resultList$ paramater.}
+ \KwOut{The partition join result at the appropriate offset in the $resultList$ parameter.}
  $leftOffset$ = $leftStartIndexes[partitionIndex]$ \;
  $rightOffset$ = $rightStartIndexes[partitionIndex]$ \;
  $resultOffset$ = $resultStartIndexes[partitionIndex]$ \;
@@ -177,20 +177,20 @@ The next algorithm we implemented on the GPU is the sort-merge join algorithm. I
 
 The pseudo code for the algorithm can be found in algorithm \ref{alg:gpu-sort-merge-join} and \ref{alg:partition-join-kernel}. This pseudo code has been simplified so it does not include the memory management that is required to make all the operations work. All the calculations shown in the algorithms are computed on the GPU. However, in the actual implementation, the CPU plays an important role in the memory management. 
 
-The algorithm first calculates a lot of sizes and offsets. These are all required to know where each partition's input needs to be read and where the output of the join results needs to be written beforehand. If we would not calculate beforehand where all the results need to be written, we would not be able to actually produce the result efficiently because either memory conflicts would occur or we would need to slow down the algorithm significantly using atomic operations. We use the partition start indexes for reading because we needed to calculate them already to determine where the results need to be written and it is then far more efficient to reuse them instead of iterating over all records until we find the correct partition.
+The algorithm first calculates a lot of sizes and offsets. These are all required to know where each partition's input needs to be read and where the output of the join for each partition needs to be written beforehand. If we would not calculate beforehand where all the results need to be written, we would not be able to actually produce the result efficiently because either memory conflicts would occur or we would need to slow down the algorithm significantly using atomic operations. We use the partition start indexes for reading because we needed to calculate them already to determine where the results need to be written and it is then far more efficient to reuse them instead of iterating over all records until we find the correct partitions.
 
 \section{Results}
 \label{sec:results}
 As mentioned before, the TPC-H benchmark will be used to generate the test data \cite{tpc-h}. For the experiments, the \emph{lineitem} and \emph{order} tables were used. Millions of rows were generated, but in the experiments, subsets of this data will be used. The content of the rows is completely random, but the keys are generated in increasing order. Therefore, we can take subsets of the data from the beginning of the tables while ensuring that results will be found. Before actually using the data in the algorithms, we will shuffle the selected data randomly to keep the comparison between different algorithms fair in case some benefit from sorted input data.
 
-In all the experiments, the reported times will be base on averages over 10 runs. This should ensure that the results are reliable and not influenced by external factors like other processes.
+In all the experiments, the reported times will be based on averages over 10 runs. This should ensure that the results are reliable and not influenced by external factors like other processes. The reported times are wall-clock times and not, for example, CPU utilization. Note that the time measurements have millisecond accuracy.
 
-We will start the experiments by looking at the different memory strategies that can be used. We will then continue by comparing the fastest of the three strategies to the implemented CPU filters. We will conclude the experiments by looking at a comparison of the results for the join algorithms.
+We will start the experiments by looking at the different memory strategies that can be used. We will then continue by comparing them to the implemented CPU filters. We will conclude the experiments by looking at a comparison of the results for the join algorithms.
 
 \subsection{Memory strategies}
-Experiments using the \emph{order} and \emph{lineitem} tables have been performed to find how the different CUDA memory strategies compare performance wise. We use the simple filtering algorithms, described in section \ref{sec:gpu-implementation}, to compare the different strategies. The results were conducted for both tables and all strategies using increasing amounts of data. The results can be found in tables \ref{tbl:line-item-strategies} and \ref{tbl:order-strategies}.
+Experiments using the \emph{order} and \emph{lineitem} tables have been performed to find how the different CUDA memory strategies compare performance wise. We use the simple filtering algorithms, described in section \ref{sec:gpu-implementation}, to compare the different strategies. The experiments were conducted for both tables and all strategies using increasing amounts of data. The results can be found in tables \ref{tbl:line-item-strategies} and \ref{tbl:order-strategies}.
 
-For the line items, the filter that was used was a check on the \emph{extendedprice}. The value in this column had to be smaller than 20.000 in order for a row to be selected. This filter selected approximately $26\%$ of the data. For the orders, the filter was on the \emph{orderstatus} column. In this case the filter value was the character \emph{O}. This filter selects approximately $48\%$ of the data.
+For the line items, the filter that was used was a check on the \emph{extendedprice}. The value in this column had to be smaller than 20.000 in order for a row to be selected. This filter selects approximately $26\%$ of the data. For the orders, the filter is on the \emph{orderstatus} column. In this case the filter value is the character \emph{O}. This filter selects approximately $48\%$ of the data.
 
 The \emph{count} columns show the number of records that were used in the input data. The strategy column shows which memory strategy was used. \emph{Sync} is the synchronous filter described in section \ref{sec:filter-synchronous}. \emph{Async} was described in \ref{sec:filter-asynchronous}, while \emph{UM} was described in section \ref{sec:filter-unified-memory}. The \emph{Pre} column contains the time in milliseconds that the preprocessing took. This includes all the memory allocation, data copying and other overhead. The \emph{Compute} column shows the actual time the GPU required to compute the results. The \emph{Post} column contains the time that postprocessing took. This includes copying the results back to the host memory and materializing the actual results. The \emph{Total} column includes the last three columns and additionally the time it took to cleanup all the allocated memory and some other overhead.
 
@@ -200,7 +200,7 @@ We will now discuss what the actual meaning of the results for both the line ite
 
 Another important observation we can make is the fact that the preprocessing takes a significant amount of time, even when the data that has to be copied is very small. This can probably be explained by the latency of memory operations that involve the GPU. Another factor that might play a role is the GPU setup that has to be performed every time we want to use it.
 
-We can also see that the performance difference between the synchronous and the asynchronous strategy is small at small data sets, but increases as the data set grows. The same is the case for Unified Memory, although the growth is faster with that strategy. This can be explained as follows for the asynchronous strategy. This strategy especially benefits when the actual computation time is relatively longer, since computing and copying can be done at the same time. However, in the case of our filter, the computations take a very small amount of time which means that the benefit from the overlapping operations is very small. The asynchronous nature of the copying therefore only adds overhead most likely. In the case of Unified Memory, the explanation is similar. Unified Memory copies the required data when necessary. Since a lot more blocks of data are copied for bigger data sets, the overhead and effect of the copy latency also get a lot bigger.
+We can also see that the performance difference between the synchronous and the asynchronous strategy is small at small data sets, but increases as the data set grows. The same is the case for Unified Memory, although the growth is faster with that strategy. This can be explained as follows for the asynchronous strategy. This strategy especially benefits when the actual computation time is relatively longer, since computing and copying can be done at the same time. However, in the case of our filter, the computations take a very small amount of time which means that the benefit from the overlapping operations is very small. The asynchronous nature of the copying therefore most likely only adds overhead. In the case of Unified Memory, the explanation is similar. Unified Memory copies the required data when necessary. Since a lot more blocks of data are copied for bigger data sets, the overhead and effect of the copy latency also get a lot bigger.
 
 Looking at these results, it seems that a synchronous strategy works best for this application. However, one can imagine scenarios where the other strategies can be useful as well. Unified Memory can come in very handy when we are not going to use all the data, but only parts of it. This would then result in only part of the data being copied instead of copying all the data naively. The asynchronous strategy can be useful when the computations take relatively longer as mentioned before.
 
@@ -227,8 +227,8 @@ Looking at these results, it seems that a synchronous strategy works best for th
         & UM    &  -     & -       & -     & - \\
 \bottomrule
 \end{tabular}
-\label{tbl:line-item-strategies}
 \caption{Results in milliseconds for line item filtering using different memory strategies on the GPU}
+\label{tbl:line-item-strategies}
 \end{table}
 
 \begin{table}
@@ -250,8 +250,8 @@ Looking at these results, it seems that a synchronous strategy works best for th
         & UM    &  394,1 & 928,6 & 157,1 & 1530 \\
 \bottomrule
 \end{tabular}
-\label{tbl:order-strategies}
 \caption{Results in milliseconds for order filtering using different memory strategies on the GPU}
+\label{tbl:order-strategies}
 \end{table}
 
 \subsection{Filtering}
@@ -269,8 +269,8 @@ To get an actual idea of how usable a GPU is for the type of application we are 
 5000000 & 594,3 \\
 \bottomrule
 \end{tabular}
-\label{tbl:line-items-cpu}
 \caption{Results in milliseconds for non-indexed line item filtering on the CPU}
+\label{tbl:line-items-cpu}
 \end{table}
 
 \begin{table}
@@ -288,8 +288,8 @@ To get an actual idea of how usable a GPU is for the type of application we are 
         & Non-indexed & -      & 161,5 \\
 \bottomrule
 \end{tabular}
-\label{tbl:orders-cpu}
 \caption{Results in milliseconds for order filtering on the CPU}
+\label{tbl:orders-cpu}
 \end{table}
 
 The results for the same filtering algorithms on the CPU can be found in table \ref{tbl:line-items-cpu} and \ref{tbl:orders-cpu}. The \emph{Count} column in those tables has the same meaning. The \emph{Pre} column is only used for the indexed search algorithm and shows the time it took to build the index. The \emph{Compute} column shows the time it took to search for the desired records.
@@ -298,9 +298,9 @@ The filters that were used for the orders and line items are the same as the fil
 
 We will first make some important observations about the results for the CPU. An important difference with the GPU algorithms is that no data copying before or after the calculations is needed. This is an important advantage of the CPU algorithms. Furthermore, the indexed search seems to perform very poorly judging from table \ref{tbl:orders-cpu}. However, this is caused by the high number of results for this scenario. When selecting a relatively small number of values, the performance of the indexed CPU algorithm is far better if we do not take the time it takes to build the index into account. Results for this kind of data have not been include because they are not very relevant for the GPU comparison.
 
-Now, we will compare the GPU results to the GPU results. What immediately becomes obvious from the results is that the total required time of the GPU is bigger in all cases than the total required time for the CPU. However, if we only look at the computation time and exclude the preprocessing and postprocessing steps, the performance of the GPU is not nearly as bad.
+Now, we will compare the GPU results to the CPU results. What immediately becomes obvious from the results is that the total required time of the GPU is bigger in all cases than the total required time for the CPU. However, if we only look at the computation time and exclude the preprocessing and postprocessing steps, the performance of the GPU is not nearly as bad.
 
-Because the processing times themselves are good for GPUs, they are still potentially useful in the field of query processing. We will discuss this in more detail in section \ref{sec:discussion-performance}.
+Because the processing times themselves are good for GPUs, they are still potentially useful for filter queries. We will discuss this in more detail in section \ref{sec:discussion-performance}.
 
 \subsection{Joins}
 In the final experiments we will take a look at the join algorithms. We will join the \emph{order} and \emph{lineitem} tables by their \emph{orderkey} column. \emph{orderkey} is the primary key of the \emph{order} table. Therefore, every order is joined with zero or more line items, while every line item is joined with one order.
@@ -318,8 +318,8 @@ We take the same number of rows from both relations for the experiments. This wi
 1000000 & 1943,4 & 1508,1 & 3409,1 \\
 \bottomrule
 \end{tabular}
-\label{tbl:join-results}
 \caption{Results in milliseconds for both CPU and GPU join algorithms}
+\label{tbl:join-results}
 \end{table}
 
 \begin{table}
@@ -333,24 +333,24 @@ We take the same number of rows from both relations for the experiments. This wi
 1000000 & 1819,4 & 865,4 & 655,4 & 3409,1 \\
 \bottomrule
 \end{tabular}
-\label{tbl:join-gpu}
 \caption{Results in milliseconds for sort-merge join on the GPU}
+\label{tbl:join-gpu}
 \end{table}
 
-The column names in table \ref{tbl:join-gpu} match those of the tables we saw before. The \emph{Pre} column includes everything until the actual calculation of the join result (including the computation of all required start indexes and sizes). The \emph{Compute} is the time it actually took to calculate the result, while the \emph{Post} and \emph{Total} represent the time it takes to copy the results to the host and the total time for the entire process respectively.
+The column names in table \ref{tbl:join-gpu} match those of the tables we saw before. The \emph{Pre} column includes everything until the actual calculation of the join result (including the computation of all required start indexes and sizes). The \emph{Compute} column contains the time it actually took to calculate the result, while the \emph{Post} and \emph{Total} represent the time it takes to copy the results to the host and the total time for the entire process respectively.
 
 We can see some interesting results in these tables. First of all, compared to the filtering algorithms, the preprocessing times are smaller. The only explanation I have for this is that the Thrust library that was used for this algorithm somehow has a smaller constant overhead compared to the memory strategies that were implemented for the filtering. 
 
 We can also see that the CPU hash join algorithm generally performs better than the sort-merge join algorithm. However, this does not mean the sort-merge algorithm is not useful. If the input for the algorithm would already be sorted (i.e. because it was indexed), or if sorted output is required, the sort-merge join algorithm might perform better.
 
-When comparing the CPU and GPU performance, we can see that the CPU generally wins. However, if we only take the computation and postprocessing times into account (we can do this if the input is already in the GPU memory), there is not much of a difference.
+When comparing the CPU and GPU performance, we can see that the CPU generally performs better. However, if we only take the computation and postprocessing times into account (we can do this if the input is already in the GPU memory), there is not much of a difference.
 
 \section{Discussion}
 \label{sec:discussion}
 So far we have looked mostly at the computational performance of the algorithms. However, another aspect that might also be important is the time it takes to implement the algorithms. We will start this section by looking at that. After that, we will discuss the performance comparison between CPU and GPU algorithms a bit more. We will finish the discussion by looking at how useful the GPU might be for query processing applications.
 
 \subsection{Ease of implementation}
-When we look at the effort it takes to implement GPU algorithms and compare this to the effort it takes to implement their CPU counter parts, the GPU does not do very well. We can already see this if we simply look at the amount of code required to implement the algorithms. The CPU sort-merge join algorithm took approximately 70 lines. However, the GPU sort-merge join took a little over 200 lines. This different is mostly caused by the big number of extra steps that is required for the GPU algorithm. We can also see this in algorithm \ref{alg:gpu-sort-merge-join}. We see similar results for the filter algorithms. The synchronous GPU algorithm takes approximately 50 lines. The asynchronous strategy takes almost 90 lines of code, while the Unified Memory approach also takes 50 lines. This is a lot compared to the simple CPU filter at approximately 20 lines.
+When we look at the effort it takes to implement GPU algorithms and compare this to the effort it takes to implement their CPU counter parts, the GPU does not do very well. We can already see this if we simply look at the amount of code required to implement the algorithms. The CPU sort-merge join algorithm took approximately 70 lines. However, the GPU sort-merge join took a little over 200 lines. This difference is mostly caused by the big number of extra steps that is required for the GPU algorithm. We can also see this in algorithm \ref{alg:gpu-sort-merge-join}. We see similar results for the filter algorithms. The synchronous GPU algorithm takes approximately 50 lines. The asynchronous strategy takes almost 90 lines of code, while the Unified Memory approach also takes 50 lines. This is a lot compared to the simple CPU filter at approximately 20 lines.
 
 Another factor that I think is important for the ease of implementation is the amount of documentation and other helpful resources available. During the implementation of the GPU algorithms, I found that there is a lot fewer of those resources available when working with CUDA (and probably other GPGPU languages). This also makes the implementation of algorithms more difficult.
 
@@ -376,11 +376,11 @@ There is still a lot that can be done in the area of GPU query processing. Altho
 
 A comparison between CUDA and, for example, OpenCL when applied to query processing could also be interesting. Another possibility is the implementation of some of the complete benchmark queries defined in TPC-H. This does not immediately require a complete DBMS, but it requires combining some more operations than were implemented in this project. Such a TPC-H benchmark implementation could also make it easier to compare the performance to other complete systems.
 
-Although quite a bit of research has already been done on the implementation of specific operations, I think it could also be good to see some completely new solutions to these problems. Since the research of GPU algorithms is not as far as the research of CPU algorithms, it is possible that some new, faster algorithms are still to be found found for some operations. This could also increase the chance of GPUs becoming useful for query processing.
+Although quite a bit of research has already been done on the implementation of specific operations, I think it could also be good to see some completely new solutions to these problems. Since the research of GPU algorithms is not as far as the research of CPU algorithms, it is possible that some new, faster algorithms are still to be found for some operations. This could also increase the chance of GPUs becoming useful for query processing.
 
 \section{Conclusion}
 \label{sec:conclusion}
-There is no short answer to the question what the current state of query processing on GPUs is, or at least not one that does justice to the potential of GPUs. As it currently stands, it is unlikely that a regular database can benefit from the capabilities of a GPU. However, we have seen that the time the actual computations of an operation take can be shorter on GPUs. The biggest problem at this moment, however, is the data transfer from and to the GPU. Another obstacle we saw was the implementation of GPU algorithms. 
+There is no short answer to the question what the current state of query processing on GPUs is, or at least not one that does justice to the potential of GPUs. As it currently stands, it is unlikely that a regular database can benefit from the capabilities of a GPU. However, we have seen that the time the actual computations for an operation take can be shorter on GPUs. The biggest problem at this moment, however, is the data transfer from and to the GPU. Another obstacle we saw was the implementation of GPU algorithms. 
 
 Looking at these problems, one might say that GPUs are not useful for query processing. However, their performance might be better than the performance of a CPU when we consider in-memory databases that are not updated very often. This makes the current applications limited, but if the most important problems of GPUs are solved, they might just become very powerful query processors.
 
