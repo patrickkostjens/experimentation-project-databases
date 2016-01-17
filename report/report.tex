@@ -33,6 +33,7 @@
 \end{titlepage}
 
 \begin{abstract}
+So far, database query processing has mostly been done using CPUs. However, recent research shows that GPUs might be able to improve the query processing performance. In this experimental analysis, we implement filter and join algorithms on both the CPU and the GPU. We compare their performance and look at some important factors that influence the performance. This gives us an idea of the current possibilities of GPUs for database query processing. We find that there are some problems with GPUs that severely limit the current applications. However, GPUs do have the potential to play an important role in speeding up database queries.
 
 \textbf{Keywords:} query processing, graphics processing unit, relational database, parallel processing, CUDA
 \end{abstract}
@@ -379,7 +380,9 @@ Although quite a bit of research has already been done on the implementation of 
 
 \section{Conclusion}
 \label{sec:conclusion}
+There is no short answer to the question what the current state of query processing on GPUs is, or at least not one that does justice to the potential of GPUs. As it currently stands, it is unlikely that a regular database can benefit from the capabilities of a GPU. However, we have seen that the time the actual computations of an operation take can be shorter on GPUs. The biggest problem at this moment, however, is the data transfer from and to the GPU. Another obstacle we saw was the implementation of GPU algorithms. 
 
+Looking at these problems, one might say that GPUs are not useful for query processing. However, their performance might be better than the performance of a CPU when we consider in-memory databases that are not updated very often. This makes the current applications limited, but if the most important problems of GPUs are solved, they might just become very powerful query processors.
 
 \bibliography{references}{}
 \bibliographystyle{acm}
