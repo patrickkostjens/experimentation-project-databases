@@ -113,29 +113,39 @@ void RunIndexedCPUFilter(std::vector<Order>& orders) {
 }
 
 void RunCPUSortMergeJoin(std::vector<LineItem>& items, std::vector<Order>& orders) {
+#if DEBUG
 	std::cout << "Running CPU sort merge join\n";
+#endif
 	CPUSortMergeJoin<Order, LineItem> processor(orders, items);
 	std::clock_t start = std::clock();
 	std::vector<std::tuple<Order, LineItem>>& results = processor.Join(&OrderJoinPropertySelector, &LineItemJoinPropertySelector);
 	size_t resultCount = results.size();
 
 	double duration = GetElapsedTime(start);
+	std::cout << duration << "\n";
+#if DEBUG
 	std::cout << "CPU sort-merge join result count: " << resultCount << "\n";
 	std::cout << "CPU sort-merge joining took " << duration << "ms\n\n";
+#endif
 
 	delete &results;
 }
 
 void RunCPUHashJoin(std::vector<LineItem>& items, std::vector<Order>& orders) {
+#if DEBUG
 	std::cout << "Running CPU hash join\n";
+#endif
 	CPUHashJoin<Order, LineItem> processor(orders, items);
 	std::clock_t start = std::clock();
 	std::vector<std::tuple<Order, LineItem>>& results = processor.Join(&OrderJoinPropertySelector, &LineItemJoinPropertySelector);
 	size_t resultCount = results.size();
 
 	double duration = GetElapsedTime(start);
+	std::cout << duration << "\n";
+#if DEBUG
 	std::cout << "CPU hash join result count: " << resultCount << "\n";
 	std::cout << "CPU hash joining took " << duration << "ms\n\n";
+#endif
 
 	delete &results;
 }
@@ -179,7 +189,14 @@ void ExecuteCPUQuery(Query query)
 		std::vector<Order>& orders = ReadAllOrders("..\\..\\orders.tbl");
 		std::vector<LineItem>& items = ReadAllLineItems("..\\..\\lineitem.tbl");
 		RunCPUSortMergeJoin(items, orders);
+		for (int i = 0; i < 10; i++) {
+			RunCPUSortMergeJoin(items, orders);
+		}
+		std::cout << "---";
 		RunCPUHashJoin(items, orders);
+		for (int i = 0; i < 10; i++) {
+			RunCPUHashJoin(items, orders);
+		}
 		delete &items;
 		delete &orders;
 	}

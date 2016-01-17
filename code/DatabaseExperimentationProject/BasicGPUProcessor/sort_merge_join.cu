@@ -83,9 +83,9 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	thrust::device_vector<int> d_leftKeys(h_leftItems.size());
 	thrust::device_vector<int> d_rightKeys(h_rightItems.size());
 
-	std::cout << "Copying input and allocating space took " << GetElapsedTime(h_start) << "ms\n";
-	h_start = std::clock();
-	std::clock_t h_totalStart = std::clock();
+	//std::cout << "Copying input and allocating space took " << GetElapsedTime(h_start) << "ms\n";
+	//h_start = std::clock();
+	//std::clock_t h_totalStart = std::clock();
 
 	// Create device vectors containing the keys for the join operation
 	order_key_selector<Left> leftOperator;
@@ -93,15 +93,15 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	thrust::transform(d_leftItems.begin(), d_leftItems.end(), d_leftKeys.begin(), leftOperator);
 	thrust::transform(d_rightItems.begin(), d_rightItems.end(), d_rightKeys.begin(), rightOperator);
 
-	std::cout << "Selecting join keys took " << GetElapsedTime(h_start) << "ms\n";
-	h_start = std::clock();
+	//std::cout << "Selecting join keys took " << GetElapsedTime(h_start) << "ms\n";
+	//h_start = std::clock();
 
 	// Sort the data using the keys (used for partitioning the data)
 	thrust::sort_by_key(d_leftKeys.begin(), d_leftKeys.end(), d_leftItems.begin());
 	thrust::sort_by_key(d_rightKeys.begin(), d_rightKeys.end(), d_rightItems.begin());
 
-	std::cout << "Sorting data took " << GetElapsedTime(h_start) << "ms\n";
-	h_start = std::clock();
+	//std::cout << "Sorting data took " << GetElapsedTime(h_start) << "ms\n";
+	//h_start = std::clock();
 
 	// Allocate space for the parition keys and sizes
 	thrust::device_vector<int> d_leftCountKeys(h_leftItems.size());
@@ -109,8 +109,8 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	thrust::device_vector<int> d_leftCounts(h_leftItems.size());
 	thrust::device_vector<int> d_rightCounts(h_rightItems.size());
 
-	std::cout << "Allocating space for partition keys and values took " << GetElapsedTime(h_start) << "ms\n";
-	h_start = std::clock();
+	//std::cout << "Allocating space for partition keys and values took " << GetElapsedTime(h_start) << "ms\n";
+	//h_start = std::clock();
 
 	// Calculate the partition keys and sizes
 	auto h_newLeftEnd = thrust::reduce_by_key(d_leftKeys.begin(), d_leftKeys.end(), 
@@ -118,8 +118,8 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	auto h_newRightEnd = thrust::reduce_by_key(d_rightKeys.begin(), d_rightKeys.end(), 
 		thrust::make_constant_iterator(1), d_rightCountKeys.begin(), d_rightCounts.begin());
 
-	std::cout << "Calculating partition keys and sizes took " << GetElapsedTime(h_start) << "ms\n";
-	h_start = std::clock();
+	//std::cout << "Calculating partition keys and sizes took " << GetElapsedTime(h_start) << "ms\n";
+	//h_start = std::clock();
 
 	int64_t h_leftCount = h_newLeftEnd.first - d_leftCountKeys.begin();
 	int64_t h_rightCount = h_newRightEnd.first - d_rightCountKeys.begin();
@@ -150,16 +150,16 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	// Compute the prefix sum to get the start indexes from the partition sizes
 	thrust::exclusive_scan(d_startIndexes.begin(), d_startIndexes.begin() + h_filteredResultSize, d_startIndexes.begin());
 
-	std::cout << "Calculating partition start indexes took " << GetElapsedTime(h_start) << "ms\n";
-	h_start = std::clock();
+	//std::cout << "Calculating partition start indexes took " << GetElapsedTime(h_start) << "ms\n";
+	//h_start = std::clock();
 
 	thrust::device_vector<int> d_leftStartIndexes(h_leftCount);
 	thrust::device_vector<int> d_rightStartIndexes(h_rightCount);
 	thrust::exclusive_scan(d_leftCounts.begin(), d_leftCounts.begin() + h_leftCount, d_leftStartIndexes.begin());
 	thrust::exclusive_scan(d_rightCounts.begin(), d_rightCounts.begin() + h_rightCount, d_rightStartIndexes.begin());
 
-	std::cout << "Calculating join block start indexes took " << GetElapsedTime(h_start) << "ms\n";
-	h_start = std::clock();
+	//std::cout << "Calculating join block start indexes took " << GetElapsedTime(h_start) << "ms\n";
+	//h_start = std::clock();
 
 	unsigned int h_partitionCount = (unsigned int)d_startIndexes.size();
 	int h_joinResultSize = 0;
@@ -172,7 +172,10 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	unsigned int h_blockSize = 256;
 	unsigned int h_numBlocks = (h_partitionCount + (h_blockSize - 1)) / h_blockSize;
 
-	std::cout << "Join preparation took " << GetElapsedTime(h_start) << "ms\n";
+	double h_preTime = GetElapsedTime(h_start);
+#if DEBUG
+	std::cout << "Join preparation took " << h_preTime << "ms\n";
+#endif
 	h_start = std::clock();
 	join_partitions<<<h_numBlocks, h_blockSize>>>(thrust::raw_pointer_cast(d_leftItems.data()),
 		thrust::raw_pointer_cast(d_leftStartIndexes.data()),
@@ -186,8 +189,11 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	// cudaDeviceSynchronize waits for the kernel to finish, and returns any errors encountered during the launch.
 	handleCudaError(cudaDeviceSynchronize());
 
-	std::cout << "Calculating join result took " << GetElapsedTime(h_start) << "ms\n";
-	std::cout << "Total join calculations took " << GetElapsedTime(h_totalStart) << "ms\n";
+	double h_computeTime = GetElapsedTime(h_start);
+#if DEBUG
+	std::cout << "Calculating join result took " << h_computeTime << "ms\n";
+#endif
+	//std::cout << "Total join calculations took " << GetElapsedTime(h_totalStart) << "ms\n";
 	h_start = std::clock();
 
 	thrust::host_vector<thrust::tuple<Left, Right>> h_thrustResult = d_joinResult;
@@ -196,7 +202,11 @@ std::vector<std::tuple<Left, Right>>& sort_merge_join(std::vector<Left>& h_leftI
 	for (size_t i = 0; i < h_thrustResult.size(); i++) {
 		h_result[i] = std::make_tuple(thrust::get<0>(h_thrustResult[i]), thrust::get<1>(h_thrustResult[i]));
 	}
-	std::cout << "Copying results to host took " << GetElapsedTime(h_start) << "ms\n";
+	double h_postTime = GetElapsedTime(h_start);
+	std::cout << h_preTime << " " << h_computeTime << " " << h_postTime;
+#if DEBUG
+	std::cout << "Copying results to host took " << h_postTime << "ms\n";
+#endif
 
 	return h_result;
 }

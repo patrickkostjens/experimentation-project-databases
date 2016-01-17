@@ -29,7 +29,9 @@ public:
 		std::clock_t start = std::clock();
 		sort_with_lambda_selector<Left, Comparable>(_leftData, leftSelector);
 		sort_with_lambda_selector<Right, Comparable>(_rightData, rightSelector);
+#if DEBUG
 		std::cout << "Sorting took " << GetElapsedTime(start) << "ms\n";
+#endif
 
 		start = std::clock();
 		std::vector<Left>::iterator leftIterator = _leftData.begin();
@@ -54,7 +56,9 @@ public:
 				rightIterator++;
 			}
 		}
+#if DEBUG
 		std::cout << "Merging took " << GetElapsedTime(start) << "ms\n";
+#endif
 
 		/*for (unsigned int i = 0; i < result->size(); i++) {
 			JoinTuple &resultElement = result->at(i);

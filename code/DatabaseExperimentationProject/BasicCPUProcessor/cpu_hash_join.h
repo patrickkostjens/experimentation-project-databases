@@ -32,8 +32,9 @@ private:
 			auto pair = std::pair<Key, const Value&>(keySelector(element), element);
 			hashTable.insert(pair);
 		}
-
+#if DEBUG
 		std::cout << "Building hash table took " << GetElapsedTime(start) << "ms\n";
+#endif
 	}
 
 	template <typename Comparable, typename Hashed, typename Scanned>
@@ -54,7 +55,9 @@ private:
 				localResults++;
 			}
 		}
+#if DEBUG
 		std::cout << "Joining using hash table took " << GetElapsedTime(start) << "ms\n";
+#endif
 		return result;
 	}
 

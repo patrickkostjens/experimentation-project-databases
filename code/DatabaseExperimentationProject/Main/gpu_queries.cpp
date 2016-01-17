@@ -50,18 +50,25 @@ void RunGPUFilter(std::vector<Order>& orders) {
 }
 
 void GPUSortMergeJoin(std::vector<LineItem>& items, std::vector<Order>& orders) {
+#if DEBUG
 	std::cout << "Running GPU Sort-Merge Join\n";
+#endif
 	std::clock_t start = std::clock();
 	std::vector<std::tuple<Order, LineItem>>& results = gpu_sort_merge_join<Order, LineItem>(orders, items);
 
 	double duration = GetElapsedTime(start);
+	std::cout << " " << duration << "\n";
+#if DEBUG
 	std::cout << "GPU result count: " << results.size() << "\n";
 	std::cout << "GPU processing took " << duration << "ms\n\n";
+#endif
 
 	delete &results;
 }
 
 void RunGPUSortMergeJoin(std::vector<LineItem>& items, std::vector<Order>& orders) {
 	GPUSortMergeJoin(items, orders);
-	GPUSortMergeJoin(items, orders);
+	for (int i = 0; i < 10; i++) {
+		GPUSortMergeJoin(items, orders);
+	}
 }
